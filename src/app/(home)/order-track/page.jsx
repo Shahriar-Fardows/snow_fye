@@ -1,5 +1,7 @@
-"use client";
 
+
+"use client";
+export const dynamic = 'force-dynamic';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,26 +14,27 @@ import {
   XCircle,
   MapPin,
   Calendar,
-  DollarSign,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
-export default function OrderTracking() {
-  const searchParams = useSearchParams();
+function OrderTrackingContent() {
   const [orderId, setOrderId] = useState("");
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
   useEffect(() => {
-    const idFromUrl = searchParams.get("id");
-    if (idFromUrl) {
-      setOrderId(idFromUrl);
-      handleSearch(idFromUrl);
+    // Check URL params on client side only
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const idFromUrl = params.get("id");
+      if (idFromUrl) {
+        setOrderId(idFromUrl);
+        handleSearch(idFromUrl);
+      }
     }
-  }, [searchParams]);
+  }, []);
 
   const handleSearch = async (id = orderId) => {
     if (!id.trim()) {
@@ -49,7 +52,6 @@ export default function OrderTracking() {
 
       console.log("🔍 Searching for order ID:", id);
 
-      // Search using the main orders API with id parameter
       const response = await fetch(`/api/orders?id=${encodeURIComponent(id)}`);
 
       if (!response.ok) {
@@ -137,10 +139,6 @@ export default function OrderTracking() {
       default:
         return "text-gray-700";
     }
-  };
-
-  const getPaymentStatusColor = (status) => {
-    return status === "paid" ? "text-green-600 bg-green-50" : "text-orange-600 bg-orange-50";
   };
 
   const trackingSteps = [
@@ -455,4 +453,8 @@ export default function OrderTracking() {
       </div>
     </div>
   );
+}
+
+export default function OrderTrackingPage() {
+  return <OrderTrackingContent />;
 }
