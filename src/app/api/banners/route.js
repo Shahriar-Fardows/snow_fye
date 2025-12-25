@@ -1,6 +1,6 @@
 import clientPromise from "@/lib/dbConnect"
-import { ObjectId } from "mongodb"
 import { v2 as cloudinary } from "cloudinary"
+import { ObjectId } from "mongodb"
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,

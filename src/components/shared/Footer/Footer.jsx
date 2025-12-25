@@ -1,11 +1,11 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, Phone, MapPin } from "lucide-react"
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Swal from "sweetalert2"
 import axios from "axios"
+import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter, Youtube } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import Swal from "sweetalert2"
 
 const navigationLinks = [
   { name: "Shop", href: "/shop" },
@@ -138,13 +138,13 @@ export default function Footer() {
               <Link href="/">
                 <img
                   src={settings.logo.url}
-                  alt="Ecomus Logo"
+                  alt="ecomus Logo"
                   className="h-10 w-auto mb-6 brightness-0 invert"
                   style={{ width: settings.logo.width ? `${settings.logo.width}px` : 'auto' }}
                 />
               </Link>
             ) : (
-              <h3 className="text-2xl font-bold text-white mb-6">Ecomus</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">ecomus</h3>
             )}
 
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
@@ -229,9 +229,10 @@ export default function Footer() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Copyright */}
-            <div className="text-sm text-gray-500">
-              © 2025 Ecomus. All rights reserved.
-            </div>
+           <div className="text-sm text-gray-500">
+  © {new Date().getFullYear()} snowfye. All rights reserved.
+</div>
+
 
             {/* Social Links */}
             {!loading && settings?.socials && (

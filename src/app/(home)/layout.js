@@ -21,18 +21,18 @@ const merriweather = Merriweather({
 
 // ✅ Default metadata (Next.js 13+ feature)
 export const metadata = {
-  title: "Ecomus | Your All-in-One E-commerce Solution",
+  title: "ecomus | Your All-in-One E-commerce Solution",
   description:
-    "Ecomus is a complete e-commerce platform template where you can sell anything online. Fast, secure, and SEO-optimized.",
+    "ecomus is a complete e-commerce platform template where you can sell anything online. Fast, secure, and SEO-optimized.",
   keywords:
-    "Ecomus, e-commerce, online store, e-commerce template, shop, buy, sell",
-  authors: [{ name: "Ecomus" }],
+    "ecomus, e-commerce, online store, e-commerce template, shop, buy, sell",
+  authors: [{ name: "ecomus" }],
   openGraph: {
-    title: "Ecomus | Your All-in-One E-commerce Solution",
+    title: "ecomus | Your All-in-One E-commerce Solution",
     description:
-      "Launch your online store with Ecomus. Sell anything, anywhere with our complete e-commerce solution.",
+      "Launch your online store with ecomus. Sell anything, anywhere with our complete e-commerce solution.",
     url: "https://ecomus.ecomus.teachfosys.com",
-    siteName: "Ecomus",
+    siteName: "ecomus",
     type: "website",
   },
   icons: {

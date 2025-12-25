@@ -1,8 +1,8 @@
 "use client"
 
 import { Cloudinary } from "@cloudinary/url-gen"
-import { useState } from "react"
 import axios from "axios"
+import { useState } from "react"
 
 export const useCloudinary = () => {
   const [uploading, setUploading] = useState(false)

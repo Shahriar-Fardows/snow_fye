@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import useAuthContext from "@/hooks/useAuthContext"
+import { getCartFromStorage } from "@/utils/cartUtils"
 import axios from "axios"
 import { Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import CartSlider from "../CartSlider/CartSlider" 
-import { getCartFromStorage } from "@/utils/cartUtils"
+import CartSlider from "../CartSlider/CartSlider"
 
 const menuItems = [
     { name: "Home", href: "/" },
@@ -134,7 +134,7 @@ export default function Navbar() {
                                         style={{ width: `${logo.width}px`, height: "auto" }}
                                     />
                                 ) : (
-                                    <span className="text-xl font-bold">Ecomus</span>
+                                    <span className="text-xl font-bold">ecomus</span>
                                 )}
                             </Link>
                         </div>
@@ -232,7 +232,7 @@ export default function Navbar() {
                                     style={{ width: `${logo.width}px`, height: "auto" }}
                                 />
                             ) : (
-                                <span className="text-xl font-bold">Ecomus</span>
+                                <span className="text-xl font-bold">ecomus</span>
                             )}
                         </Link>
                         <Button
