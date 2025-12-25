@@ -173,8 +173,8 @@ export default function OrderTracking() {
         </div>
 
         {/* Search Section */}
-        <Card className="!pt-0  mb-8 shadow-lg border border-gray-300 !py-0">
-          <CardHeader className="py-4 bg-black py-4 text-white rounded-t-lg">
+        <Card className="mb-8 shadow-lg border border-gray-300">
+          <CardHeader className="bg-black text-white rounded-t-lg">
             <CardTitle>Find Your Order</CardTitle>
             <CardDescription className="text-gray-300">
               Enter the order ID from your invoice or confirmation email
@@ -203,7 +203,7 @@ export default function OrderTracking() {
 
         {/* Order Not Searched Yet */}
         {!searched && !order && (
-          <Card className="!pt-0  text-center p-12 bg-gray-50 border border-gray-300">
+          <Card className="text-center p-12 bg-gray-50 border border-gray-300">
             <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600 text-lg">Enter your order ID above to track your order</p>
           </Card>
@@ -213,8 +213,8 @@ export default function OrderTracking() {
         {order && (
           <div className="space-y-6">
             {/* Order Header */}
-            <Card className="!pt-0  shadow-lg border border-gray-300 ">
-              <CardHeader className="py-4 bg-gray-100 border-b border-gray-300">
+            <Card className="shadow-lg border border-gray-300">
+              <CardHeader className="bg-gray-100 border-b border-gray-300">
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-2xl text-black">
@@ -239,8 +239,8 @@ export default function OrderTracking() {
             </Card>
 
             {/* Tracking Timeline */}
-            <Card className="!pt-0  shadow-lg border border-gray-300">
-              <CardHeader className="py-4 bg-gray-50 border-b border-gray-300">
+            <Card className="shadow-lg border border-gray-300">
+              <CardHeader className="bg-gray-50 border-b border-gray-300">
                 <CardTitle className="text-black">Order Progress</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
@@ -281,8 +281,8 @@ export default function OrderTracking() {
             {/* Customer & Delivery Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Customer Info */}
-              <Card className="!pt-0  shadow-lg border border-gray-300">
-                <CardHeader className="py-4 bg-gray-100 border-b border-gray-300">
+              <Card className="shadow-lg border border-gray-300">
+                <CardHeader className="bg-gray-100 border-b border-gray-300">
                   <CardTitle className="text-lg text-black">Customer Information</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-3">
@@ -302,8 +302,8 @@ export default function OrderTracking() {
               </Card>
 
               {/* Delivery Info */}
-              <Card className="!pt-0  shadow-lg border border-gray-300">
-                <CardHeader className="py-4 bg-gray-100 border-b border-gray-300">
+              <Card className="shadow-lg border border-gray-300">
+                <CardHeader className="bg-gray-100 border-b border-gray-300">
                   <CardTitle className="text-lg text-black">Delivery Information</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-3">
@@ -333,8 +333,8 @@ export default function OrderTracking() {
             </div>
 
             {/* Order Items */}
-            <Card className="!pt-0  shadow-lg border border-gray-300">
-              <CardHeader className="py-4 bg-gray-100 border-b border-gray-300">
+            <Card className="shadow-lg border border-gray-300">
+              <CardHeader className="bg-gray-100 border-b border-gray-300">
                 <CardTitle className="text-black">Order Items</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
@@ -347,12 +347,12 @@ export default function OrderTracking() {
                           <div className="space-y-2">
                             {item.selectedColor && (
                               <div className="flex items-center gap-3">
-                               
-                                <span className="flex gap-2 text-sm text-gray-600">Color: <div
+                                <div
                                   className="w-6 h-6 rounded-full border-2 border-gray-400 flex-shrink-0"
                                   style={{ backgroundColor: item.selectedColor }}
                                   title={`Color: ${item.selectedColor}`}
-                                /></span>
+                                />
+                                <span className="text-sm text-gray-600">Color: {item.selectedColor}</span>
                               </div>
                             )}
                             {item.selectedSize && (
@@ -373,8 +373,8 @@ export default function OrderTracking() {
             </Card>
 
             {/* Order Summary */}
-            <Card className="!pt-0  shadow-lg border border-gray-300">
-              <CardHeader className="py-4 bg-gray-100 border-b border-gray-300">
+            <Card className="shadow-lg border border-gray-300">
+              <CardHeader className="bg-gray-100 border-b border-gray-300">
                 <CardTitle className="text-black">Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
@@ -420,7 +420,7 @@ export default function OrderTracking() {
             </Card>
 
             {/* Payment Status */}
-            <Card className="!pt-0  shadow-lg border border-gray-300">
+            <Card className="shadow-lg border border-gray-300">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -444,7 +444,7 @@ export default function OrderTracking() {
 
         {/* Searched but not found */}
         {searched && !order && (
-          <Card className="!pt-0  text-center p-12 bg-gray-100 border border-gray-300">
+          <Card className="text-center p-12 bg-gray-100 border border-gray-300">
             <XCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-700 text-lg font-semibold">Order not found</p>
             <p className="text-gray-600 mt-2">
