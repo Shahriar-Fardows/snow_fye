@@ -243,6 +243,8 @@ const CheckoutPage = () => {
           quantity: item.quantity,
           currency: item.currency || "৳",
           image: item.image || item.productImage,
+          selectedColor: item.selectedColor,
+          selectedSize: item.selectedSize,
         })),
         deliveryArea: selectedAreaData?.area,
         deliveryCharge: finalDeliveryCharge,
@@ -262,6 +264,33 @@ const CheckoutPage = () => {
       const orderResponse = await axios.post("/api/orders", orderData)
 
       if (orderResponse.status === 200 || orderResponse.status === 201) {
+        const orderId = orderResponse.data._id || orderResponse.data.orderId
+
+        // Send invoice email
+        try {
+          const invoicePayload = {
+            email: formData.email,
+            orderId: orderId,
+            customerName: `${formData.firstName} ${formData.lastName}`,
+            items: orderData.items,
+            subtotal: orderData.subtotal,
+            deliveryCharge: orderData.deliveryCharge,
+            total: orderData.total,
+            deliveryArea: orderData.deliveryArea,
+            estimatedDelivery: orderData.estimatedDelivery,
+            customerInfo: orderData.customerInfo,
+            couponDiscount: orderData.couponDiscount || 0,
+          }
+
+          console.log("📧 Sending invoice email for order:", orderId)
+          await axios.post("/api/send-invoice", invoicePayload)
+          console.log("✅ Invoice email sent successfully")
+        } catch (emailError) {
+          console.error("⚠️ Failed to send invoice email:", emailError.response?.data || emailError.message)
+          // Continue anyway - order is already placed
+        }
+
+        // Update coupon usage
         if (appliedCoupon && !appliedCoupon.customData?.isUnlimited) {
           const newMaxUsage = appliedCoupon.customData.maxUsage - 1
           await axios.put("/api/coupons", {
@@ -273,6 +302,7 @@ const CheckoutPage = () => {
           })
         }
 
+        // Clear cart
         if (user?.email) {
           await axios.delete("/api/cart", {
             data: { email: user.email, clearAll: true },
@@ -283,7 +313,7 @@ const CheckoutPage = () => {
 
         Swal.fire({
           title: "Order Placed Successfully!",
-          text: `Your order has been placed. Order ID: ${orderResponse.data._id || orderResponse.data.orderId || "Generated"}`,
+          text: `Your order has been placed. Invoice has been sent to ${formData.email}. Order ID: ${String(orderId).slice(-6)}`,
           icon: "success",
           timer: 3000,
           showConfirmButton: false,
@@ -292,7 +322,7 @@ const CheckoutPage = () => {
         router.push("/dashboard")
       }
     } catch (error) {
-      console.error("Error processing order:", error)
+      console.error("Error processing order:", error.response?.data || error.message)
       Swal.fire("Error", "Failed to process your order. Please try again.", "error")
     } finally {
       setProcessing(false)
@@ -454,7 +484,15 @@ const CheckoutPage = () => {
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900 text-sm">{item.title}</h3>
                           <div className="text-xs text-gray-600 space-y-1">
-                            {item.selectedColor && <p>Color: {item.selectedColor}</p>}
+                            {item.selectedColor && (
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                  style={{ backgroundColor: item.selectedColor }}
+                                />
+                                <span>Color</span>
+                              </div>
+                            )}
                             {item.selectedSize && <p>Size: {item.selectedSize}</p>}
                             <p>Qty: {item.quantity}</p>
                           </div>

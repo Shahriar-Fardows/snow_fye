@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog"
 import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import {
-    CheckCircle, Clock, CreditCard, Download, Edit, Eye, FileText, MoreHorizontal, Package, RefreshCw, Search, Trash2, Truck, XCircle,
+  CheckCircle, Clock, CreditCard, Download, Edit, Eye, FileText, MoreHorizontal, Package, RefreshCw, Search, Trash2, Truck, XCircle,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import Swal from "sweetalert2"
@@ -274,10 +274,13 @@ export default function OrdersManagement() {
         </style>
       </head>
       <body>
+      <div class="invoice-container">
         <div class="header">
           ${logoUrl ? `<img src="${logoUrl}" alt="Logo" class="logo" />` : ''}
-          <div class="invoice-title">INVOICE</div>
+        </div>
+        <div class="invoice-title">INVOICE</div>
           <p class="order-id">Order ID: #${order._id.slice(-6)}</p>
+        </div>
         </div>
         <div class="invoice-details">
           <p><strong>Customer Name:</strong> ${order.customerInfo.name}</p>

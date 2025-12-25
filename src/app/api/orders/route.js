@@ -1,3 +1,4 @@
+// /app/api/orders/route.js
 import clientPromise from "@/lib/dbConnect";
 import { ObjectId } from "mongodb";
 
@@ -10,13 +11,67 @@ export async function GET(req) {
     const url = new URL(req.url);
     const searchParams = Object.fromEntries(url.searchParams.entries());
 
+    console.log("📋 GET /api/orders called with params:", searchParams);
+
     let query = {};
 
     // If ID exists, prioritize finding by ID
     if (searchParams.id) {
-      query._id = new ObjectId(searchParams.id);
-      const order = await db.collection("orders").findOne(query);
-      return new Response(JSON.stringify(order), {
+      console.log("🔍 Searching by ID:", searchParams.id);
+      
+      const searchId = searchParams.id;
+
+      // Try to find by full MongoDB ObjectId
+      try {
+        if (ObjectId.isValid(searchId)) {
+          const order = await db.collection("orders").findOne({ _id: new ObjectId(searchId) });
+          if (order) {
+            console.log("✅ Found by full ObjectId");
+            return new Response(JSON.stringify(order), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+        }
+      } catch (err) {
+        console.log("⚠️ Not a valid ObjectId format");
+      }
+
+      // If not found, try searching by last 6 characters
+      if (searchId.length >= 6) {
+        const last6Chars = searchId.slice(-6);
+        console.log("🔎 Searching by last 6 characters:", last6Chars);
+
+        const allOrders = await db.collection("orders").find({}).toArray();
+        const order = allOrders.find((o) => o._id.toString().slice(-6) === last6Chars);
+        
+        if (order) {
+          console.log("✅ Found by last 6 chars");
+          return new Response(JSON.stringify(order), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      // If still not found, try searching by full string match
+      try {
+        const allOrders = await db.collection("orders").find({}).toArray();
+        const order = allOrders.find((o) => o._id.toString() === searchId);
+        
+        if (order) {
+          console.log("✅ Found by string match");
+          return new Response(JSON.stringify(order), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      } catch (err) {
+        console.log("⚠️ String match search failed");
+      }
+
+      console.log("❌ Order not found");
+      return new Response(JSON.stringify(null), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
@@ -29,13 +84,16 @@ export async function GET(req) {
       }
     });
 
+    console.log("📊 Fetching orders with query:", query);
     const orders = await db.collection("orders").find(query).toArray();
+    console.log("✅ Found", orders.length, "orders");
 
     return new Response(JSON.stringify(orders), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    console.error("❌ GET /api/orders Error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
@@ -61,11 +119,21 @@ export async function POST(req) {
 
     const result = await db.collection("orders").insertOne(body);
 
-    return new Response(JSON.stringify({ message: "Order placed", data: result }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.log("✅ Order created with ID:", result.insertedId);
+
+    return new Response(
+      JSON.stringify({
+        _id: result.insertedId,
+        orderId: result.insertedId,
+        message: "Order placed successfully",
+      }),
+      {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
+    console.error("❌ Order creation error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

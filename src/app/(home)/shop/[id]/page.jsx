@@ -1,10 +1,13 @@
 "use client";
 import ReviewSystem from "@/components/shared/ReviewSystem/ReviewSystem";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import useAuthContext from "@/hooks/useAuthContext";
 import { addToCart } from "@/utils/cartUtils";
 import axios from "axios";
-import { ArrowLeft, Minus, Plus, ShoppingCart } from "lucide-react";
+import { ArrowLeft, MapPin, Minus, Plus, ShoppingCart, X } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -34,10 +37,31 @@ const ProductDetailsPage = () => {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [currentImages, setCurrentImages] = useState([]);
 
+  // Checkout Modal States
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [deliveryAreas, setDeliveryAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState("");
+  const [deliveryCharge, setDeliveryCharge] = useState(0);
+  const [estimatedDays, setEstimatedDays] = useState("");
+  const [deliveryNote, setDeliveryNote] = useState("");
+  const [processing, setProcessing] = useState(false);
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    postalCode: "",
+    notes: "",
+  });
+
   useEffect(() => {
     if (params.id) {
       fetchProductDetails();
       fetchRelatedProducts();
+      loadDeliveryAreas();
     }
   }, [params.id]);
 
@@ -53,6 +77,17 @@ const ProductDetailsPage = () => {
       setCurrentImages(product.mainImages || []);
     }
   }, [product, selectedColor]);
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        email: user.email || "",
+        firstName: user.displayName?.split(" ")[0] || "",
+        lastName: user.displayName?.split(" ").slice(1).join(" ") || "",
+      }));
+    }
+  }, [user]);
 
   const fetchProductDetails = async () => {
     try {
@@ -90,6 +125,15 @@ const ProductDetailsPage = () => {
       }
     } catch (err) {
       console.error("Error fetching related products:", err);
+    }
+  };
+
+  const loadDeliveryAreas = async () => {
+    try {
+      const response = await axios.get("/api/delivery-charges");
+      setDeliveryAreas(response.data);
+    } catch (error) {
+      console.error("Error loading delivery areas:", error);
     }
   };
 
@@ -170,6 +214,189 @@ const ProductDetailsPage = () => {
         timer: 2000,
         showConfirmButton: false,
       });
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!selectedColor && product.variants && product.variants.length > 0) {
+      Swal.fire({
+        title: "Please select a color",
+        icon: "warning",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    if (!selectedSize && product.variants && product.variants.some((v) => v.sizes && v.sizes.length > 0)) {
+      Swal.fire({
+        title: "Please select a size",
+        icon: "warning",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    setShowCheckoutModal(true);
+  };
+
+  const handleAreaSelection = (areaId) => {
+    const area = deliveryAreas.find((a) => a._id === areaId);
+    if (area) {
+      setSelectedArea(areaId);
+      setDeliveryCharge(area.charge);
+      setEstimatedDays(area.estimatedDays);
+      setDeliveryNote(area.customData?.note || "");
+      setFormData((prev) => ({ ...prev, city: area.area }));
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const calculateSubtotal = () => {
+    const price = typeof product.price === "string" ? Number.parseInt(product.price) : product.price;
+    return price * quantity;
+  };
+
+  const getFinalDeliveryCharge = () => {
+    const subtotal = calculateSubtotal();
+    return subtotal >= 2000 ? 0 : deliveryCharge;
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    const finalDeliveryCharge = subtotal >= 2000 ? 0 : deliveryCharge;
+    return subtotal + finalDeliveryCharge;
+  };
+
+  const handleCheckoutSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!selectedArea) {
+      Swal.fire("Select Delivery Area", "Please select a delivery area.", "warning");
+      return;
+    }
+
+    const requiredFields = ["firstName", "lastName", "email", "phone", "address"];
+    const missingFields = requiredFields.filter((field) => !formData[field].trim());
+
+    if (missingFields.length > 0) {
+      Swal.fire("Missing Information", "Please fill in all required fields.", "warning");
+      return;
+    }
+
+    try {
+      setProcessing(true);
+
+      const selectedAreaData = deliveryAreas.find((a) => a._id === selectedArea);
+      const subtotal = calculateSubtotal();
+      const finalDeliveryCharge = getFinalDeliveryCharge();
+
+      const orderData = {
+        customerInfo: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          postalCode: formData.postalCode,
+        },
+        items: [
+          {
+            productId: product._id,
+            title: product.title,
+            price: typeof product.price === "string" ? Number.parseInt(product.price) : product.price,
+            quantity: quantity,
+            currency: product.currency || "৳",
+            image: currentImages?.[0]?.url || product.mainImages?.[0]?.url,
+            selectedColor: selectedColor,
+            selectedSize: selectedSize,
+          },
+        ],
+        deliveryArea: selectedAreaData?.area,
+        deliveryCharge: finalDeliveryCharge,
+        estimatedDelivery: estimatedDays,
+        subtotal: subtotal,
+        couponCode: null,
+        couponDiscount: 0,
+        total: calculateTotal(),
+        paymentMethod: "Cash on Delivery",
+        orderStatus: "pending",
+        paymentStatus: "unpaid",
+        notes: formData.notes,
+        userEmail: user?.email || formData.email,
+        createdAt: new Date().toISOString(),
+      };
+
+      const orderResponse = await axios.post("/api/orders", orderData);
+
+      if (orderResponse.status === 200 || orderResponse.status === 201) {
+        // Send invoice email
+        try {
+          const orderId = orderResponse.data._id || orderResponse.data.orderId;
+          console.log("🆔 Order ID from response:", orderId);
+          console.log("📦 Order Response:", orderResponse.data);
+
+          const invoicePayload = {
+            email: formData.email,
+            orderId: orderId,
+            customerName: `${formData.firstName} ${formData.lastName}`,
+            items: orderData.items,
+            subtotal: orderData.subtotal,
+            deliveryCharge: orderData.deliveryCharge,
+            total: orderData.total,
+            deliveryArea: orderData.deliveryArea,
+            estimatedDelivery: orderData.estimatedDelivery,
+            customerInfo: orderData.customerInfo,
+            couponDiscount: orderData.couponDiscount || 0,
+          };
+
+          console.log("📧 Full Invoice Payload:", JSON.stringify(invoicePayload, null, 2));
+
+          const invoiceResponse = await axios.post("/api/send-invoice", invoicePayload);
+          console.log("✅ Invoice sent successfully:", invoiceResponse.data);
+        } catch (emailError) {
+          console.error("❌ Full error object:", emailError);
+          console.error("Response data:", emailError.response?.data);
+          console.error("Response status:", emailError.response?.status);
+          console.error("Error message:", emailError.message);
+          // Continue anyway - order is already placed
+        }
+
+        Swal.fire({
+          title: "Order Placed Successfully!",
+          text: `Your order has been placed. Invoice has been sent to ${formData.email}. Order ID: ${orderResponse.data._id || orderResponse.data.orderId || "Generated"}`,
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+
+        setShowCheckoutModal(false);
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          address: "",
+          city: "",
+          postalCode: "",
+          notes: "",
+        });
+        setSelectedArea("");
+        setQuantity(1);
+      }
+    } catch (error) {
+      console.error("Error processing order:", error);
+      Swal.fire("Error", "Failed to process your order. Please try again.", "error");
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -384,10 +611,17 @@ const ProductDetailsPage = () => {
                 <button
                   onClick={handleAddToCart}
                   disabled={product.quantity === 0}
-                  className="flex-1 bg-gray-900 text-white py-3 px-6 rounded hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 bg-gray-200 text-gray-900 py-3 px-6 rounded hover:bg-gray-300 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <ShoppingCart className="h-5 w-5" />
                   {product.quantity === 0 ? "Sold Out" : "Add to Cart"}
+                </button>
+                <button
+                  onClick={handleBuyNow}
+                  disabled={product.quantity === 0}
+                  className="flex-1 bg-gray-900 text-white py-3 px-6 rounded hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {product.quantity === 0 ? "Sold Out" : "Buy Now"}
                 </button>
               </div>
             </div>
@@ -446,6 +680,190 @@ const ProductDetailsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Checkout Modal */}
+      {showCheckoutModal && (
+        <div className="fixed inset-0 bg-#00000063 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Complete Your Order</h2>
+              <button
+                onClick={() => setShowCheckoutModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Order Item Preview */}
+              <div className="mb-6 pb-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
+                <div className="flex gap-4">
+                  <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <img
+                      src={currentImages?.[0]?.url || "/placeholder.svg"}
+                      alt={product.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">{product.title}</h4>
+                    <div className="text-sm text-gray-600 mt-2 space-y-1">
+                      {selectedColor && <p>Color: {selectedColor}</p>}
+                      {selectedSize && <p>Size: {selectedSize}</p>}
+                      <p>Quantity: {quantity}</p>
+                      <p className="text-lg font-bold text-gray-900 mt-2">
+                        {product.currency}
+                        {formatPrice(product.price) * quantity}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Checkout Form */}
+              <form onSubmit={handleCheckoutSubmit} className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Shipping Information</h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                    <Input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                    <Input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                  <Input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                  <Input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+                  <Input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <MapPin className="inline h-4 w-4 mr-1" />
+                      Delivery Area *
+                    </label>
+                    <Select value={selectedArea} onValueChange={handleAreaSelection}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select area" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {deliveryAreas.map((area) => (
+                          <SelectItem key={area._id} value={area._id}>
+                            {area.area} - ৳{area.charge}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+                    <Input
+                      type="text"
+                      name="postalCode"
+                      value={formData.postalCode}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Order Notes (Optional)</label>
+                  <Textarea
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleInputChange}
+                    placeholder="Any special instructions..."
+                    rows={2}
+                  />
+                </div>
+
+                {/* Price Summary */}
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium">৳{calculateSubtotal()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Delivery Charge</span>
+                    <span className="font-medium">
+                      {getFinalDeliveryCharge() === 0 ? (
+                        <span className="text-green-600">Free</span>
+                      ) : (
+                        `৳${getFinalDeliveryCharge()}`
+                      )}
+                    </span>
+                  </div>
+                  {selectedArea && estimatedDays && (
+                    <div className="flex justify-between text-sm border-t border-gray-200 pt-2 mt-2">
+                      <span className="text-gray-600">Estimated Delivery</span>
+                      <span className="font-medium">{estimatedDays} days</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-2 mt-2">
+                    <span>Total</span>
+                    <span>৳{calculateTotal()}</span>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={processing || !selectedArea}
+                  className="w-full bg-gray-900 text-white py-3 px-6 rounded font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  {processing ? "Processing..." : "Confirm & Place Order"}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
