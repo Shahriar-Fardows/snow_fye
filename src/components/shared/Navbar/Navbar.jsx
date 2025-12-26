@@ -135,7 +135,7 @@ export default function Navbar() {
                                         style={{ width: `${logo.width}px`, height: "auto" }}
                                     />
                                 ) : (
-                                    <span className="text-xl font-bold">ecomus</span>
+                                    <span className="text-xl font-bold">snowfye</span>
                                 )}
                             </Link>
                         </div>
@@ -233,7 +233,7 @@ export default function Navbar() {
                                     style={{ width: `${logo.width}px`, height: "auto" }}
                                 />
                             ) : (
-                                <span className="text-xl font-bold">ecomus</span>
+                                <span className="text-xl font-bold">snowfye</span>
                             )}
                         </Link>
                         <Button

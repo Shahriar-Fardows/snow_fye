@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb"
 export async function GET(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
 
     // Get query parameters
     const { searchParams } = new URL(req.url)
@@ -76,7 +76,7 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
 
     const body = await req.json()
     
@@ -164,7 +164,7 @@ export async function POST(req) {
 export async function PUT(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
     
     const updateData = await req.json()
 
@@ -305,7 +305,7 @@ export async function PUT(req) {
 export async function DELETE(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
     
     const body = await req.json()
 
@@ -396,7 +396,7 @@ export async function DELETE(req) {
 export async function PATCH(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
     
     const patchData = await req.json()
 

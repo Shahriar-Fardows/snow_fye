@@ -21,24 +21,27 @@ const merriweather = Merriweather({
 
 // ✅ Default metadata (Next.js 13+ feature)
 export const metadata = {
-  title: "ecomus | Your All-in-One E-commerce Solution",
+  title: "snowfye | Your All-in-One E-commerce Solution",
   description:
-    "ecomus is a complete e-commerce platform template where you can sell anything online. Fast, secure, and SEO-optimized.",
+    "snowfye is a complete e-commerce platform template where you can sell anything online. Fast, secure, and SEO-optimized.",
   keywords:
-    "ecomus, e-commerce, online store, e-commerce template, shop, buy, sell",
-  authors: [{ name: "ecomus" }],
+    "snowfye, e-commerce, online store, e-commerce template, shop, buy, sell",
+  authors: [{ name: "snowfye" }],
   openGraph: {
-    title: "ecomus | Your All-in-One E-commerce Solution",
+    title: "snowfye | Your All-in-One E-commerce Solution",
     description:
-      "Launch your online store with ecomus. Sell anything, anywhere with our complete e-commerce solution.",
-    url: "https://ecomus.ecomus.teachfosys.com",
-    siteName: "ecomus",
+      "Launch your online store with snowfye. Sell anything, anywhere with our complete e-commerce solution.",
+    url: "https://snowfye.com",
+    siteName: "snowfye",
     type: "website",
   },
   icons: {
     icon: "/src/app/favicon.ico",
   },
-  metadataBase: new URL("https://ecomus.ecomus.teachfosys.com"),
+  metadataBase: new URL("https://snowfye.com"),
+    verification: {
+    google: "Qdu1Qos7QA4Mv_86CZirEzmydnrkejRU3I5YPfwNE-Q",
+  },
 };
 
 export default function RootLayout({ children }) {

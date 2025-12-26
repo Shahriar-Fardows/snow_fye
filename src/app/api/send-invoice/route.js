@@ -1,5 +1,5 @@
-import nodemailer from "nodemailer";
 import clientPromise from "@/lib/dbConnect";
+import nodemailer from "nodemailer";
 
 export async function POST(req) {
   try {
@@ -85,7 +85,7 @@ export async function POST(req) {
 
     try {
       const client = await clientPromise;
-      const db = client.db("ecomus");
+      const db = client.db("snowfye");
       const settings = await db.collection("general-settings").findOne({});
       if (settings?.logo?.url) {
         logoUrl = settings.logo.url;
@@ -472,8 +472,8 @@ export async function POST(req) {
             <p>🎉 Thank you for your purchase!</p>
             <p>If you have any questions about your order, please don't hesitate to reach out to us.</p>
             <div class="footer-divider"></div>
-            <p>📞 <span class="footer-link">support@ecomus.com</span> | 🌐 www.ecomus.com</p>
-            <p>© 2024 ECOMUS. All rights reserved. 💙</p>
+            <p>📞 <span class="footer-link">support@snowfye.com</span> | 🌐 www.snowfye.com</p>
+            <p>© 2024 snowfye. All rights reserved. 💙</p>
           </div>
         </div>
       </body>

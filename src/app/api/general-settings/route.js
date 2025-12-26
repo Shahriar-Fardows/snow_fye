@@ -12,7 +12,7 @@ cloudinary.config({
 export async function GET() {
   try {
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const settings = await db.collection("general_settings").findOne({});
     return new Response(JSON.stringify(settings || {}), {
@@ -28,7 +28,7 @@ export async function GET() {
 export async function POST(req) {
   try {
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const { logo, socials, announcements, announcementsStatus } = await req.json();
 
@@ -64,7 +64,7 @@ export async function POST(req) {
 export async function PUT(req) {
   try {
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const { announcementsStatus } = await req.json();
 
@@ -80,7 +80,7 @@ export async function PUT(req) {
 export async function DELETE(req) {
   try {
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const { index } = await req.json();
 

@@ -415,7 +415,7 @@ const SiteInfoPage = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="info@ecomus.com"
+                  placeholder="info@snowfye.com"
                   value={contactData.email}
                   onChange={(e) => handleContactChange("email", e.target.value)}
                    className={"bg-gray-50 border border-gray-300 text-sm p-2.5"}

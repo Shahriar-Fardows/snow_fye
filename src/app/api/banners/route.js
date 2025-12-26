@@ -12,7 +12,7 @@ cloudinary.config({
 export async function GET(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
 
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
@@ -36,7 +36,7 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
 
     const {
       image,
@@ -82,7 +82,7 @@ export async function POST(req) {
 export async function PUT(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
 
     const {
       id,
@@ -120,7 +120,7 @@ export async function PUT(req) {
 export async function DELETE(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
     const { id } = await req.json()
     if (!id) return new Response(JSON.stringify({ error: "Banner ID is required" }), { status: 400 })
 

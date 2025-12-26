@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb";
 export async function GET(req) {
   try {
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id"); // ?id=123
@@ -32,7 +32,7 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const body = await req.json();
     if (!body || Object.keys(body).length === 0) {
@@ -70,7 +70,7 @@ export async function POST(req) {
 export async function PUT(req) {
   try {
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const { id, ...updateData } = await req.json();
     if (!id) {
@@ -98,7 +98,7 @@ export async function PUT(req) {
 export async function DELETE(req) {
   try {
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const { id } = await req.json();
     if (!id) {

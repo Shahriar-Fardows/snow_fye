@@ -43,7 +43,7 @@ export async function GET(req) {
     const info = await transporter.sendMail({
       from: emailUser,
       to: testEmail,
-      subject: "🧪 Test Email - Ecomus",
+      subject: "🧪 Test Email - snowfye",
       html: `
         <h2>Test Email Success! ✅</h2>
         <p>Your email configuration is working correctly.</p>

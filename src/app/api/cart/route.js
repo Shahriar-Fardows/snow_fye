@@ -7,7 +7,7 @@ export async function GET(request) {
     const email = searchParams.get("email");
 
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const query = email ? { email } : {};
     const cartItems = await db.collection("cart").find(query).toArray();
@@ -55,7 +55,7 @@ export async function POST(request) {
     }
 
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const result = await db.collection("cart").insertOne({
       ...data,
@@ -149,7 +149,7 @@ export async function PUT(request) {
     }
 
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     // First, check if the item exists
     const existingItem = await db.collection("cart").findOne({ _id: new ObjectId(id) });
@@ -247,7 +247,7 @@ export async function DELETE(request) {
     console.log("DELETE request data:", { id, email, clearAll });
 
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     // Clear all items for a user
     if (clearAll && email) {

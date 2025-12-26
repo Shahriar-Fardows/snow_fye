@@ -10,7 +10,7 @@ export async function GET(request) {
     const filterRating = url.searchParams.get("rating");
 
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     // Build query - CRITICAL: productId must match exactly
     const query = {};
@@ -64,7 +64,7 @@ export async function POST(request) {
   try {
     const data = await request.json();
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     // Check if this is a comment on a review
     if (data.reviewId) {
@@ -137,7 +137,7 @@ export async function DELETE(request) {
     }
 
     const client = await clientPromise;
-    const db = client.db("ecomus");
+    const db = client.db("snowfye");
 
     const result = await db.collection("reviews").deleteOne({ _id: new ObjectId(id) });
 

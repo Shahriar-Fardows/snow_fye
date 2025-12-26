@@ -208,7 +208,7 @@ export default function ContactPage() {
         </div>
         <div className="w-full h-[50vh]">
           <iframe
-            title="ecomus Location"
+            title="snowfye Location"
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.019876812246!2d-122.40237308468183!3d37.78980057975765!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80858064f8e1bb55%3A0x21c1f2de68139de1!2s33%20New%20Montgomery%20St%2C%20San%20Francisco%2C%20CA%2094105!5e0!3m2!1sen!2sus!4v1695200000000!5m2!1sen!2sus"
             width="100%"
             height="100%"

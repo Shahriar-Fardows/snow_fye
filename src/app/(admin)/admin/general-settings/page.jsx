@@ -134,7 +134,7 @@ const GeneralSettingsForm = () => {
     if (!isEditing) return
     setLoading(true)
     try {
-      const response = await axios.post("/api/general-settingss", formData)
+      const response = await axios.post("/api/general-settings", formData)
       setOriginalData(response.data)
       setIsEditing(false)
     } catch (error) {

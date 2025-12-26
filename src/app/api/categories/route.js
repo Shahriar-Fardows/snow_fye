@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb"
 export async function GET() {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
 
     const categories = await db.collection("categories").find().toArray()
 
@@ -39,7 +39,7 @@ export async function GET() {
 export async function POST(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
 
     const body = await req.json()
     if (!body || Object.keys(body).length === 0) {
@@ -105,7 +105,7 @@ export async function POST(req) {
 export async function PUT(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
 
     const { id, ...updateData } = await req.json()
     if (!id) {
@@ -177,7 +177,7 @@ export async function PUT(req) {
 export async function DELETE(req) {
   try {
     const client = await clientPromise
-    const db = client.db("ecomus")
+    const db = client.db("snowfye")
 
     const { id } = await req.json()
     if (!id) {

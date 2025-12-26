@@ -138,13 +138,13 @@ export default function Footer() {
               <Link href="/">
                 <img
                   src={settings.logo.url}
-                  alt="ecomus Logo"
+                  alt="snowfye Logo"
                   className="h-10 w-auto mb-6 brightness-0 invert"
                   style={{ width: settings.logo.width ? `${settings.logo.width}px` : 'auto' }}
                 />
               </Link>
             ) : (
-              <h3 className="text-2xl font-bold text-white mb-6">ecomus</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">snowfye</h3>
             )}
 
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
