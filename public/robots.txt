@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://snowfye.com
+
+# Sitemaps
+Sitemap: https://snowfye.com/sitemap.xml
