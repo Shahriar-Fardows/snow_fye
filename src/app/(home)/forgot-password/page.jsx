@@ -41,6 +41,17 @@ const ForgotPasswordPage = () => {
 
         try {
             await forgotPassword(email);
+
+            // ---------------------------------------------------------
+            // GTM Event: reset_password_request
+            // ---------------------------------------------------------
+            if (typeof window !== "undefined") {
+                window.dataLayer = window.dataLayer || [];
+                window.dataLayer.push({
+                    event: "reset_password_request",
+                    method: "email" // Recommended GA4 parameter
+                });
+            }
             
             // Success with options to open email or continue
             const result = await Swal.fire({

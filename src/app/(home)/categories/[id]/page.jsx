@@ -35,6 +35,36 @@ const CategoryPage = () => {
     applyFilters()
   }, [products, sortBy, priceRange, selectedColor])
 
+  // Helper to format price
+  const formatPrice = (price) => {
+    return typeof price === "string" ? Number.parseInt(price) : price
+  }
+
+  // ---------------------------------------------------------
+  // GTM Event: view_item_list
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && filteredProducts.length > 0 && category && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null }); // Clear previous ecommerce object
+      window.dataLayer.push({
+        event: "view_item_list",
+        ecommerce: {
+          item_list_name: category.name || "Category Page",
+          item_list_id: categoryId,
+          items: filteredProducts.slice(0, 10).map((product, index) => ({
+            item_id: product._id,
+            item_name: product.title,
+            price: formatPrice(product.price),
+            currency: product.currency || "BDT",
+            item_category: category.name,
+            index: index,
+          }))
+        }
+      });
+    }
+  }, [loading, filteredProducts, category, categoryId]);
+
   const fetchCategoryData = async () => {
     try {
       setLoading(true)
@@ -67,7 +97,7 @@ const CategoryPage = () => {
     // Price range filter
     if (priceRange !== "all") {
       filtered = filtered.filter((product) => {
-        const price = typeof product.price === "string" ? Number.parseInt(product.price) : product.price
+        const price = formatPrice(product.price)
         switch (priceRange) {
           case "under-100":
             return price < 100
@@ -92,16 +122,12 @@ const CategoryPage = () => {
     switch (sortBy) {
       case "price-low":
         filtered.sort((a, b) => {
-          const priceA = typeof a.price === "string" ? Number.parseInt(a.price) : a.price
-          const priceB = typeof b.price === "string" ? Number.parseInt(b.price) : b.price
-          return priceA - priceB
+          return formatPrice(a.price) - formatPrice(b.price)
         })
         break
       case "price-high":
         filtered.sort((a, b) => {
-          const priceA = typeof a.price === "string" ? Number.parseInt(a.price) : a.price
-          const priceB = typeof b.price === "string" ? Number.parseInt(b.price) : b.price
-          return priceB - priceA
+          return formatPrice(b.price) - formatPrice(a.price)
         })
         break
       case "name-az":
@@ -120,6 +146,29 @@ const CategoryPage = () => {
   const handleAddToCart = async (product, e) => {
     e.preventDefault()
     e.stopPropagation()
+
+    // ---------------------------------------------------------
+    // GTM Event: add_to_cart
+    // ---------------------------------------------------------
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "add_to_cart",
+        ecommerce: {
+          currency: product.currency || "BDT",
+          value: formatPrice(product.price),
+          items: [{
+            item_id: product._id,
+            item_name: product.title,
+            price: formatPrice(product.price),
+            currency: product.currency || "BDT",
+            item_category: category?.name,
+            quantity: 1
+          }]
+        }
+      });
+    }
 
     try {
       if (user?.email) {
@@ -160,10 +209,6 @@ const CategoryPage = () => {
         showConfirmButton: false,
       })
     }
-  }
-
-  const formatPrice = (price) => {
-    return typeof price === "string" ? Number.parseInt(price) : price
   }
 
   const calculateDiscount = (price, comparePrice) => {
@@ -442,4 +487,4 @@ const CategoryPage = () => {
   )
 }
 
-export default CategoryPage
+export default CategoryPage;

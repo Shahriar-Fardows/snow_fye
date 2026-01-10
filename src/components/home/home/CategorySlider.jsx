@@ -19,6 +19,30 @@ const CategorySlider = ({ title = "Shop by Category", autoplay = true, className
     fetchCategories()
   }, [])
 
+  // ---------------------------------------------------------
+  // GTM Event: view_item_list (Triggered when categories load)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && categories.length > 0 && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null }); // Clear previous data
+      window.dataLayer.push({
+        event: "view_item_list",
+        ecommerce: {
+          item_list_name: title,
+          item_list_id: "category_slider",
+          items: categories.map((cat, index) => ({
+            item_id: cat._id,
+            item_name: cat.name,
+            index: index,
+            item_category: "Category Slider",
+            quantity: cat.products?.length || 0
+          }))
+        }
+      });
+    }
+  }, [loading, categories, title]);
+
   const fetchCategories = async () => {
     try {
       setLoading(true)
@@ -36,6 +60,29 @@ const CategorySlider = ({ title = "Shop by Category", autoplay = true, className
       setLoading(false)
     }
   }
+
+  // ---------------------------------------------------------
+  // GTM Event: select_item (Triggered on Click)
+  // ---------------------------------------------------------
+  const handleCategoryClick = (category, index) => {
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "select_item",
+        ecommerce: {
+          item_list_name: title,
+          item_list_id: "category_slider",
+          items: [{
+            item_id: category._id,
+            item_name: category.name,
+            index: index,
+            item_category: "Category Slider"
+          }]
+        }
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -121,9 +168,12 @@ const CategorySlider = ({ title = "Shop by Category", autoplay = true, className
         }}
         className="pb-4"
       >
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <SwiperSlide key={category._id}>
-            <Link href={`/categories/${category._id}`}>
+            <Link 
+              href={`/categories/${category._id}`}
+              onClick={() => handleCategoryClick(category, index)}
+            >
               <Card className="py-0 group relative rounded-none overflow-hidden hover:shadow-2xl transition-all duration-300 border-0">
                 <CardContent className="p-0">
                   {/* Category Image - Full Card */}
@@ -133,9 +183,6 @@ const CategorySlider = ({ title = "Shop by Category", autoplay = true, className
                       alt={category.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                    
-                    {/* Gradient Overlay */}
-                    {/* <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" /> */}
                     
                     {/* Category Info - Over Image */}
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-black z-10">
@@ -160,4 +207,4 @@ const CategorySlider = ({ title = "Shop by Category", autoplay = true, className
   )
 }
 
-export default CategorySlider
+export default CategorySlider;

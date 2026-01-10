@@ -25,6 +25,31 @@ const BlogsPage = () => {
     filterBlogs()
   }, [searchQuery, selectedTag, blogs])
 
+  // ---------------------------------------------------------
+  // GTM Event: view_item_list (Triggered on Load & Filter Change)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && filteredBlogs.length > 0 && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null }); // Clear previous data
+      window.dataLayer.push({
+        event: "view_item_list",
+        ecommerce: {
+          item_list_name: "Blog List",
+          item_list_id: "blog_list",
+          items: filteredBlogs.map((blog, index) => ({
+            item_id: blog._id,
+            item_name: blog.title,
+            index: index,
+            item_category: "Blog",
+            item_brand: blog.author, // Using author as brand
+            item_list_name: "Blog List"
+          }))
+        }
+      });
+    }
+  }, [loading, filteredBlogs]);
+
   const fetchBlogs = async () => {
     try {
       setLoading(true)
@@ -80,6 +105,29 @@ const BlogsPage = () => {
 
     setFilteredBlogs(filtered)
   }
+
+  // ---------------------------------------------------------
+  // GTM Event: select_item (Triggered on Blog Click)
+  // ---------------------------------------------------------
+  const handleBlogClick = (blog, index) => {
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "select_item",
+        ecommerce: {
+          item_list_name: "Blog List",
+          items: [{
+            item_id: blog._id,
+            item_name: blog.title,
+            index: index,
+            item_category: "Blog",
+            item_brand: blog.author
+          }]
+        }
+      });
+    }
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
@@ -196,7 +244,7 @@ const BlogsPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredBlogs.map((blog) => (
+            {filteredBlogs.map((blog, index) => (
               <Card
                 key={blog._id}
                 className="group hover:shadow-xl py-0 rounded-[5px]  transition-all duration-300 transform hover:-translate-y-1 flex flex-col"
@@ -204,7 +252,10 @@ const BlogsPage = () => {
                 <CardContent className="p-0 flex flex-col h-full">
                   {/* Blog Image */}
                   <div className="relative aspect-video bg-gray-100  overflow-hidden">
-                    <Link href={`/blogs/${blog.slug}`}>
+                    <Link 
+                      href={`/blogs/${blog.slug}`}
+                      onClick={() => handleBlogClick(blog, index)}
+                    >
                       <img
                         src={blog.image || "/placeholder.svg?height=400&width=600"}
                         alt={blog.title}
@@ -239,7 +290,10 @@ const BlogsPage = () => {
                     </div>
 
                     {/* Title */}
-                    <Link href={`/blogs/${blog.slug}`}>
+                    <Link 
+                      href={`/blogs/${blog.slug}`}
+                      onClick={() => handleBlogClick(blog, index)}
+                    >
                       <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 hover:text-black cursor-pointer transition-colors">
                         {blog.title}
                       </h3>
@@ -249,7 +303,10 @@ const BlogsPage = () => {
                     <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">{blog.excerpt}</p>
 
                     {/* Read More Link */}
-                    <Link href={`/blogs/${blog.slug}`}>
+                    <Link 
+                      href={`/blogs/${blog.slug}`}
+                      onClick={() => handleBlogClick(blog, index)}
+                    >
                       <Button variant="link" className="p-0 h-auto text-black hover:text-blue-700 font-semibold">
                         Read More →
                       </Button>
@@ -265,4 +322,4 @@ const BlogsPage = () => {
   )
 }
 
-export default BlogsPage
+export default BlogsPage;

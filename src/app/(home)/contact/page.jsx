@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { Clock, Mail, MapPin, MessageSquare, Phone, Send, User, } from "lucide-react";
+import { Clock, Mail, MapPin, MessageSquare, Phone, Send, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function ContactPage() {
@@ -22,6 +22,40 @@ export default function ContactPage() {
 
     fetchContact();
   }, []);
+
+  // ---------------------------------------------------------
+  // GTM Event: view_content (Triggered when contact info is loaded)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && contactInfo && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "view_content",
+        page_type: "Contact Us",
+        page_title: "Contact Us",
+        content_type: "page",
+        store_location: contactInfo.address ? "Has Address" : "No Address"
+      });
+    }
+  }, [loading, contactInfo]);
+
+  // ---------------------------------------------------------
+  // GTM Event: generate_lead (Triggered on Form Submit)
+  // ---------------------------------------------------------
+  const handleFormSubmit = (e) => {
+    // Note: Since this is a Formspree action, we track the 'attempt' to submit here.
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "generate_lead",
+        form_id: "contact_form",
+        form_name: "Contact Us Form",
+        currency: "BDT", // Optional default
+        value: 0 // Leads usually have 0 direct monetary value immediately
+      });
+    }
+    // We do NOT prevent default here so the Formspree action continues
+  };
 
   // Skeleton loader
   if (loading) {
@@ -85,6 +119,7 @@ export default function ContactPage() {
             action={`https://formspree.io/f/${contactInfo.formspreeCode}`}
             method="POST"
             className="space-y-6"
+            onSubmit={handleFormSubmit}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
@@ -220,4 +255,4 @@ export default function ContactPage() {
       </div>
     </div>
   );
-}
+};

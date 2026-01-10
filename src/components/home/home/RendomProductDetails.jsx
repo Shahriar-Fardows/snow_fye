@@ -27,6 +27,32 @@ const ProductGrid = ({
     fetchProducts()
   }, [])
 
+  // ---------------------------------------------------------
+  // GTM Event: view_item_list (Triggered when products load)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && products.length > 0 && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null }); // Clear previous ecommerce object
+      window.dataLayer.push({
+        event: "view_item_list",
+        ecommerce: {
+          item_list_name: title,
+          item_list_id: title.toLowerCase().replace(/\s+/g, '_'),
+          items: products.map((product, index) => ({
+            item_id: product._id,
+            item_name: product.title,
+            price: formatPrice(product.price),
+            currency: product.currency || "BDT",
+            item_category: product.category,
+            index: index,
+            quantity: 1
+          }))
+        }
+      });
+    }
+  }, [loading, products, title]);
+
   const fetchProducts = async () => {
     try {
       setLoading(true)
@@ -56,9 +82,56 @@ const ProductGrid = ({
     }
   }
 
+  // ---------------------------------------------------------
+  // GTM Event: select_item (Triggered on Product Click)
+  // ---------------------------------------------------------
+  const handleProductClick = (product, index) => {
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "select_item",
+        ecommerce: {
+          item_list_name: title,
+          items: [{
+            item_id: product._id,
+            item_name: product.title,
+            price: formatPrice(product.price),
+            currency: product.currency || "BDT",
+            item_category: product.category,
+            index: index,
+            quantity: 1
+          }]
+        }
+      });
+    }
+  };
+
   const handleAddToCart = async (product, e) => {
     e.preventDefault()
     e.stopPropagation()
+
+    // ---------------------------------------------------------
+    // GTM Event: add_to_cart
+    // ---------------------------------------------------------
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "add_to_cart",
+        ecommerce: {
+          currency: product.currency || "BDT",
+          value: formatPrice(product.price),
+          items: [{
+            item_id: product._id,
+            item_name: product.title,
+            price: formatPrice(product.price),
+            item_category: product.category,
+            quantity: 1
+          }]
+        }
+      });
+    }
 
     try {
       if (user?.email) {
@@ -149,12 +222,15 @@ const ProductGrid = ({
 
       {/* Products Grid - 2 Rows x 4 Columns */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
+        {products.map((product, index) => (
           <Card key={product._id} className="py-0 rounded-[5px] group border border-gray-200 overflow-hidden hover:shadow-2xl hover:border-gray-300 transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col bg-white">
             <CardContent className="p-0 flex flex-col h-full">
               {/* Product Image */}
               <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-                <Link href={`/shop/${product._id}`}>
+                <Link 
+                  href={`/shop/${product._id}`}
+                  onClick={() => handleProductClick(product, index)}
+                >
                   <img
                     src={product.mainImages?.[0]?.url || "/placeholder.svg"}
                     alt={product.title}
@@ -205,7 +281,10 @@ const ProductGrid = ({
 
               {/* Product Details */}
               <div className="p-2.5 flex flex-col flex-grow space-y-1.5">
-                <Link href={`/shop/${product._id}`}>
+                <Link 
+                  href={`/shop/${product._id}`}
+                  onClick={() => handleProductClick(product, index)}
+                >
                   <h3 className="text-[18px] lg:text-2xl font-semibold text-gray-900 line-clamp-2 cursor-pointer transition-colors min-h-[2.5rem] leading-tight">
                     {product.title}
                   </h3>
@@ -260,4 +339,4 @@ const ProductGrid = ({
   )
 }
 
-export default ProductGrid
+export default ProductGrid;

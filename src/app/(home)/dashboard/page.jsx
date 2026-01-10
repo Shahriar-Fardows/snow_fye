@@ -7,19 +7,19 @@ import { Card, CardContent } from "@/components/ui/card"
 import useAuthContext from "@/hooks/useAuthContext"
 import axios from "axios"
 import {
-    Calendar,
-    CheckCircle,
-    Clock,
-    DollarSign,
-    Eye,
-    LogOut,
-    Mail,
-    MapPin,
-    Package,
-    Truck,
-    User,
-    X,
-    XCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Eye,
+  LogOut,
+  Mail,
+  MapPin,
+  Package,
+  Truck,
+  User,
+  X,
+  XCircle,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -43,7 +43,22 @@ const Dashboard = () => {
     try {
       setLoading(true)
       const response = await axios.get(`/api/orders?userEmail=${user.email}`)
-      setOrders(response.data || [])
+      const ordersData = response.data || []
+      setOrders(ordersData)
+
+      // ---------------------------------------------------------
+      // GTM Event: view_order_history
+      // ---------------------------------------------------------
+      if (typeof window !== "undefined") {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: "view_order_history",
+          user_id: user.email,
+          total_orders: ordersData.length,
+          pending_orders: ordersData.filter(o => o.orderStatus?.toLowerCase() === "pending").length
+        });
+      }
+
     } catch (error) {
       console.error("Error fetching orders:", error)
     } finally {
@@ -66,6 +81,17 @@ const Dashboard = () => {
 
       if (result.isConfirmed) {
         await LogOutUser()
+
+        // ---------------------------------------------------------
+        // GTM Event: logout
+        // ---------------------------------------------------------
+        if (typeof window !== "undefined") {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+            event: "logout"
+          });
+        }
+
         Swal.fire({
           title: "Logged Out",
           text: "You have been successfully logged out.",
@@ -106,9 +132,28 @@ const Dashboard = () => {
       })
 
       if (result.isConfirmed) {
+        // Find order details before deletion for GTM
+        const orderToCancel = orders.find(o => o._id === orderId);
+
         await axios.delete("/api/orders", {
           data: { id: orderId },
         })
+
+        // ---------------------------------------------------------
+        // GTM Event: cancel_order
+        // ---------------------------------------------------------
+        if (typeof window !== "undefined") {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({ ecommerce: null });
+          window.dataLayer.push({
+            event: "cancel_order",
+            ecommerce: {
+              transaction_id: orderId,
+              value: orderToCancel?.total || 0,
+              currency: "BDT"
+            }
+          });
+        }
 
         Swal.fire({
           title: "Order Cancelled",
@@ -185,6 +230,29 @@ const Dashboard = () => {
   }
 
   const viewOrderDetails = (order) => {
+    // ---------------------------------------------------------
+    // GTM Event: view_order_details
+    // ---------------------------------------------------------
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "view_order_details",
+        ecommerce: {
+          transaction_id: order._id,
+          value: order.total,
+          currency: "BDT",
+          items: order.items?.map((item, index) => ({
+            item_id: item.productId,
+            item_name: item.title,
+            price: item.price,
+            quantity: item.quantity,
+            index: index
+          }))
+        }
+      });
+    }
+
     setSelectedOrder(order)
     setShowOrderDetails(true)
   }
@@ -507,9 +575,9 @@ const Dashboard = () => {
                         Cancel Order
                       </Button>
                     )}
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowOrderDetails(false)} 
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowOrderDetails(false)}
                       className="bg-transparent w-full sm:w-auto"
                     >
                       Close
@@ -525,4 +593,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
+export default Dashboard;

@@ -71,9 +71,6 @@ const RegisterPage = () => {
             // Store user name in cookies
             document.cookie = `userName=${encodeURIComponent(name)}; path=/`;
 
-            // Send email verification
-            // await sendEmailVerification(user);
-
             // 👉 Save user info in your own database
             await fetch("/api/userEntries", {
                 method: "POST",
@@ -88,8 +85,17 @@ const RegisterPage = () => {
                 }),
             });
 
-
-
+            // ---------------------------------------------------------
+            // GTM Event: sign_up
+            // ---------------------------------------------------------
+            if (typeof window !== "undefined") {
+                window.dataLayer = window.dataLayer || [];
+                window.dataLayer.push({
+                    event: "sign_up",
+                    method: "email", // Recommended GA4 parameter
+                    user_id: user.uid // Helps with User-ID tracking
+                });
+            }
 
             // Show additional info
             await Swal.fire({

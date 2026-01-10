@@ -3,6 +3,7 @@ import Announcement from "@/components/shared/Announcement/Announcement";
 import Footer from "@/components/shared/Footer/Footer";
 import Navbar from "@/components/shared/Navbar/Navbar";
 import { Merriweather, Playfair_Display } from "next/font/google";
+import Script from "next/script"; // Import Next.js Script
 import "../globals.css";
 
 // Headings font
@@ -39,7 +40,7 @@ export const metadata = {
     icon: "/src/app/favicon.ico",
   },
   metadataBase: new URL("https://snowfye.com"),
-    verification: {
+  verification: {
     google: "Qdu1Qos7QA4Mv_86CZirEzmydnrkejRU3I5YPfwNE-Q",
   },
 };
@@ -47,29 +48,30 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        {/* Google Tag Manager */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-PKK6MJBG');`,
-          }}
-        />
-      </head>
       <body
         className={`${playfair.variable} ${merriweather.variable} antialiased min-h-screen flex flex-col`}
-      > {/* GTM noscript */}
+      >
+        {/* Google Tag Manager - Script Optimized */}
+        <Script id="google-tag-manager" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PKK6MJBG');
+          `}
+        </Script>
+
+        {/* GTM NoScript (For users with JS disabled) */}
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-PKK6MJBG"
             height="0"
             width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
+            style={{ display: "none", visibility: "hidden" }}
           ></iframe>
         </noscript>
+
         <Context>
           <Announcement />
           <Navbar />

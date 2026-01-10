@@ -12,6 +12,30 @@ const CategoriesPage = () => {
     fetchCategories()
   }, [])
 
+  // ---------------------------------------------------------
+  // GTM Event: view_item_list (Tracks when the category list loads)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && categories.length > 0 && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null }); // Clear previous ecommerce object
+      window.dataLayer.push({
+        event: "view_item_list",
+        ecommerce: {
+          item_list_name: "All Categories",
+          item_list_id: "all_categories",
+          items: categories.map((category, index) => ({
+            item_id: category._id,
+            item_name: category.name,
+            index: index,
+            item_category: "Category List",
+            quantity: category.products?.length || 0 // Optional: sending product count as quantity
+          }))
+        }
+      });
+    }
+  }, [loading, categories]);
+
   const fetchCategories = async () => {
     try {
       setLoading(true)
@@ -29,6 +53,28 @@ const CategoriesPage = () => {
       setLoading(false)
     }
   }
+
+  // ---------------------------------------------------------
+  // GTM Event: select_item (Tracks category click)
+  // ---------------------------------------------------------
+  const handleCategoryClick = (category, index) => {
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "select_item",
+        ecommerce: {
+          item_list_name: "All Categories",
+          items: [{
+            item_id: category._id,
+            item_name: category.name,
+            index: index,
+            item_category: "Category List"
+          }]
+        }
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -96,8 +142,12 @@ const CategoriesPage = () => {
       {/* Categories Grid */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {categories.map((category) => (
-            <Link key={category._id} href={`/categories/${category._id}`}>
+          {categories.map((category, index) => (
+            <Link
+              key={category._id}
+              href={`/categories/${category._id}`}
+              onClick={() => handleCategoryClick(category, index)}
+            >
               <div className="group cursor-pointer">
                 {/* Category Image */}
                 <div className="relative aspect-square bg-gray-50 rounded overflow-hidden mb-3">
@@ -106,7 +156,7 @@ const CategoriesPage = () => {
                     alt={category.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  
+
                   {/* Product Count */}
                   <div className="absolute top-3 right-3">
                     <span className="bg-white text-gray-900 text-xs font-medium px-2 py-1 rounded shadow-sm">
@@ -115,7 +165,7 @@ const CategoriesPage = () => {
                   </div>
 
                   {/* Hover Overlay */}
-                  <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
+                  <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
                 </div>
 
                 {/* Category Details */}
@@ -136,4 +186,4 @@ const CategoriesPage = () => {
   )
 }
 
-export default CategoriesPage
+export default CategoriesPage;

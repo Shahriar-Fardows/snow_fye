@@ -55,6 +55,36 @@ const CheckoutPage = () => {
     }
   }, [user])
 
+  // ---------------------------------------------------------
+  // GTM Event: begin_checkout (Triggered when cart items are ready)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && cartItems.length > 0 && typeof window !== "undefined") {
+      const subtotal = cartItems.reduce((total, item) => {
+        const price = typeof item.price === "string" ? Number.parseInt(item.price) : item.price
+        return total + price * item.quantity
+      }, 0)
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "begin_checkout",
+        ecommerce: {
+          currency: "BDT",
+          value: subtotal,
+          items: cartItems.map((item, index) => ({
+            item_id: item._id,
+            item_name: item.title,
+            price: typeof item.price === "string" ? Number.parseInt(item.price) : item.price,
+            quantity: item.quantity,
+            item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim(),
+            index: index
+          }))
+        }
+      });
+    }
+  }, [loading, cartItems.length]);
+
   const loadCartItems = async () => {
     try {
       setLoading(true)
@@ -89,6 +119,37 @@ const CheckoutPage = () => {
       setEstimatedDays(area.estimatedDays)
       setDeliveryNote(area.customData?.note || "")
       setFormData((prev) => ({ ...prev, city: area.area }))
+
+      // ---------------------------------------------------------
+      // GTM Event: add_shipping_info
+      // ---------------------------------------------------------
+      if (typeof window !== "undefined") {
+        const subtotal = cartItems.reduce((total, item) => {
+          const price = typeof item.price === "string" ? Number.parseInt(item.price) : item.price
+          return total + price * item.quantity
+        }, 0)
+        
+        // Calculate total with new shipping charge (ignoring coupon for this event mostly)
+        const finalCharge = subtotal >= 2000 ? 0 : area.charge;
+        
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ ecommerce: null });
+        window.dataLayer.push({
+          event: "add_shipping_info",
+          ecommerce: {
+            currency: "BDT",
+            value: subtotal + finalCharge - couponDiscount,
+            shipping_tier: area.area,
+            items: cartItems.map((item) => ({
+              item_id: item._id,
+              item_name: item.title,
+              price: typeof item.price === "string" ? Number.parseInt(item.price) : item.price,
+              quantity: item.quantity,
+              item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim()
+            }))
+          }
+        });
+      }
     }
   }
 
@@ -226,6 +287,7 @@ const CheckoutPage = () => {
       const selectedAreaData = deliveryAreas.find((a) => a._id === selectedArea)
       const subtotal = calculateSubtotal()
       const finalDeliveryCharge = getFinalDeliveryCharge()
+      const totalAmount = calculateTotal()
 
       const orderData = {
         customerInfo: {
@@ -252,7 +314,7 @@ const CheckoutPage = () => {
         subtotal: subtotal,
         couponCode: appliedCoupon?.couponCode || null,
         couponDiscount: couponDiscount,
-        total: calculateTotal(),
+        total: totalAmount,
         paymentMethod: "Cash on Delivery",
         orderStatus: "pending",
         paymentStatus: "unpaid",
@@ -265,6 +327,32 @@ const CheckoutPage = () => {
 
       if (orderResponse.status === 200 || orderResponse.status === 201) {
         const orderId = orderResponse.data._id || orderResponse.data.orderId
+
+        // ---------------------------------------------------------
+        // GTM Event: purchase
+        // ---------------------------------------------------------
+        if (typeof window !== "undefined") {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({ ecommerce: null });
+          window.dataLayer.push({
+            event: "purchase",
+            ecommerce: {
+              transaction_id: orderId,
+              value: totalAmount,
+              tax: 0,
+              shipping: finalDeliveryCharge,
+              currency: "BDT",
+              coupon: appliedCoupon?.couponCode || null,
+              items: cartItems.map((item) => ({
+                item_id: item._id,
+                item_name: item.title,
+                price: typeof item.price === "string" ? Number.parseInt(item.price) : item.price,
+                quantity: item.quantity,
+                item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim()
+              }))
+            }
+          });
+        }
 
         // Send invoice email
         try {
@@ -595,7 +683,7 @@ const CheckoutPage = () => {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Truck className="h-4 w-4" />
-                     
+
                       {selectedArea && deliveryNote ? (
                         <p className="text-xs text-gray-600 mt-1">{deliveryNote}</p>
                       ) : (
@@ -613,4 +701,4 @@ const CheckoutPage = () => {
   )
 }
 
-export default CheckoutPage
+export default CheckoutPage;

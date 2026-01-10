@@ -22,6 +22,38 @@ const CartPage = () => {
     }
   }, [user?.email])
 
+  // ---------------------------------------------------------
+  // GTM Event: view_cart (Triggered when cart items are loaded)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && cartItems.length > 0 && typeof window !== "undefined") {
+      const totalValue = cartItems.reduce((acc, item) => acc + (formatPrice(item.price) * item.quantity), 0);
+      
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null }); // Clear previous ecommerce object
+      window.dataLayer.push({
+        event: "view_cart",
+        ecommerce: {
+          currency: cartItems[0]?.currency || "BDT",
+          value: totalValue,
+          items: cartItems.map((item, index) => ({
+            item_id: item._id,
+            item_name: item.title,
+            price: formatPrice(item.price),
+            currency: item.currency || "BDT",
+            quantity: item.quantity,
+            item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim(),
+            index: index
+          }))
+        }
+      });
+    }
+  }, [loading, cartItems.length]); // Dependencies adjusted to avoid spamming on quantity update
+
+  const formatPrice = (price) => {
+    return typeof price === "string" ? parseInt(price) : price
+  }
+
   const loadCartItems = async () => {
     try {
       setLoading(true)
@@ -47,27 +79,19 @@ const CartPage = () => {
     if (newQuantity < 1) return
 
     // Instantly update the UI
-    setCartItems(prevItems => 
-      prevItems.map(cartItem => 
-        cartItem._id === item._id 
+    setCartItems(prevItems =>
+      prevItems.map(cartItem =>
+        cartItem._id === item._id
           ? { ...cartItem, quantity: newQuantity }
           : cartItem
       )
     )
 
     try {
-      console.log("Updating quantity for item:", {
-        id: item._id,
-        oldQuantity: item.quantity,
-        newQuantity: newQuantity,
-        selectedColor: item.selectedColor,
-        selectedSize: item.selectedSize
-      })
-
       const response = await fetch("/api/cart", {
         method: "PUT",
-        headers: { 
-          "Content-Type": "application/json" 
+        headers: {
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           id: item._id,
@@ -78,14 +102,12 @@ const CartPage = () => {
       })
 
       const responseData = await response.json()
-      console.log("Update response:", responseData)
 
       if (!response.ok) {
-        console.error("Update failed:", responseData)
         // Revert the change if API fails
-        setCartItems(prevItems => 
-          prevItems.map(cartItem => 
-            cartItem._id === item._id 
+        setCartItems(prevItems =>
+          prevItems.map(cartItem =>
+            cartItem._id === item._id
               ? { ...cartItem, quantity: item.quantity }
               : cartItem
           )
@@ -95,9 +117,9 @@ const CartPage = () => {
     } catch (error) {
       console.error("Error updating quantity:", error)
       // Revert on error
-      setCartItems(prevItems => 
-        prevItems.map(cartItem => 
-          cartItem._id === item._id 
+      setCartItems(prevItems =>
+        prevItems.map(cartItem =>
+          cartItem._id === item._id
             ? { ...cartItem, quantity: item.quantity }
             : cartItem
         )
@@ -121,8 +143,8 @@ const CartPage = () => {
       if (result.isConfirmed) {
         const response = await fetch(`/api/cart?id=${item._id}`, {
           method: "DELETE",
-          headers: { 
-            "Content-Type": "application/json" 
+          headers: {
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
             id: item._id,
@@ -132,7 +154,29 @@ const CartPage = () => {
         const responseData = await response.json()
 
         if (response.ok) {
-          setCartItems(prevItems => 
+          // ---------------------------------------------------------
+          // GTM Event: remove_from_cart
+          // ---------------------------------------------------------
+          if (typeof window !== "undefined") {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({ ecommerce: null });
+            window.dataLayer.push({
+              event: "remove_from_cart",
+              ecommerce: {
+                currency: item.currency || "BDT",
+                value: formatPrice(item.price) * item.quantity,
+                items: [{
+                  item_id: item._id,
+                  item_name: item.title,
+                  price: formatPrice(item.price),
+                  quantity: item.quantity,
+                  item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim()
+                }]
+              }
+            });
+          }
+
+          setCartItems(prevItems =>
             prevItems.filter(cartItem => cartItem._id !== item._id)
           )
           Swal.fire("Removed!", "Item has been removed from your cart.", "success")
@@ -161,8 +205,28 @@ const CartPage = () => {
     }, 0)
   }
 
-  const formatPrice = (price) => {
-    return typeof price === "string" ? parseInt(price) : price
+  // ---------------------------------------------------------
+  // GTM Event: begin_checkout
+  // ---------------------------------------------------------
+  const handleBeginCheckout = () => {
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "begin_checkout",
+        ecommerce: {
+          currency: cartItems[0]?.currency || "BDT",
+          value: calculateSubtotal(),
+          items: cartItems.map((item) => ({
+            item_id: item._id,
+            item_name: item.title,
+            price: formatPrice(item.price),
+            quantity: item.quantity,
+            item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim()
+          }))
+        }
+      });
+    }
   }
 
   if (loading) {
@@ -280,7 +344,7 @@ const CartPage = () => {
                                 >
                                   <Minus className="h-4 w-4" />
                                 </Button>
-                                
+
                                 <Input
                                   type="number"
                                   value={item.quantity}
@@ -288,7 +352,7 @@ const CartPage = () => {
                                   className="w-16 text-center border-0 focus:ring-0"
                                   min="1"
                                 />
-                                
+
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -325,12 +389,12 @@ const CartPage = () => {
                       <span>Items ({cartItems.length})</span>
                       <span>৳{calculateSubtotal()}</span>
                     </div>
-                    
+
                     <div className="flex justify-between text-gray-600">
                       <span>Shipping</span>
                       <span>Calculated at checkout</span>
                     </div>
-                    
+
                     <div className="border-t pt-4">
                       <div className="flex justify-between text-xl font-bold">
                         <span>Total</span>
@@ -338,7 +402,7 @@ const CartPage = () => {
                       </div>
                     </div>
 
-                    <Button asChild className="w-full" size="lg">
+                    <Button asChild className="w-full" size="lg" onClick={handleBeginCheckout}>
                       <Link href="/check-out">
                         Proceed to Checkout
                       </Link>
@@ -360,4 +424,4 @@ const CartPage = () => {
   )
 }
 
-export default CartPage
+export default CartPage;

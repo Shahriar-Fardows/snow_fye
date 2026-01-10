@@ -1,5 +1,7 @@
+"use client";
 import Image from "next/image";
-import images from "../../../../public/images"; 
+import images from "../../../../public/images";
+import { useEffect } from "react";
 
 const Features = () => {
   const featuresData = [
@@ -28,6 +30,30 @@ const Features = () => {
       description: "Contact us Anytime",
     },
   ];
+
+  // ---------------------------------------------------------
+  // GTM Event: view_item_list (Triggered when Features section loads)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null }); // Clear previous data
+      window.dataLayer.push({
+        event: "view_item_list",
+        ecommerce: {
+          item_list_name: "Store Features",
+          item_list_id: "features_section",
+          items: featuresData.map((feature, index) => ({
+            item_id: `feature_${feature.id}`,
+            item_name: feature.title,
+            item_category: "Site Feature",
+            index: index,
+            description: feature.description
+          }))
+        }
+      });
+    }
+  }, []);
 
   return (
     <div className="container mx-auto border-t md:border-t-0 py-12">

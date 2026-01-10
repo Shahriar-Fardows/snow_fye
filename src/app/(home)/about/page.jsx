@@ -23,6 +23,22 @@ const Page = () => {
     fetchAbout();
   }, []);
 
+  // ---------------------------------------------------------
+  // GTM Event: view_content (Triggered when About data is loaded)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && about && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "view_content",
+        page_type: "About Us",
+        page_title: about.title,
+        content_type: "informational",
+        mission_snippet: about.mission ? about.mission.substring(0, 50) + "..." : ""
+      });
+    }
+  }, [loading, about]);
+
   // Skeleton loader
   if (loading) {
     return (

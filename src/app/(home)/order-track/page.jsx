@@ -71,6 +71,20 @@ function OrderTrackingContent() {
         const orderData = Array.isArray(data) ? data[0] : data;
         setOrder(orderData);
         console.log("✅ Order found:", orderData._id);
+
+        // ---------------------------------------------------------
+        // GTM Event: track_order
+        // ---------------------------------------------------------
+        if (typeof window !== "undefined") {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+            event: "track_order",
+            order_id: orderData._id,
+            order_status: orderData.orderStatus,
+            order_value: orderData.total,
+            currency: "BDT"
+          });
+        }
       }
     } catch (error) {
       console.error("Error fetching order:", error);

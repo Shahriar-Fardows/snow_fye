@@ -20,6 +20,25 @@ const BlogDetailPage = () => {
     }
   }, [params.slug])
 
+  // ---------------------------------------------------------
+  // GTM Event: view_content (Triggered when Blog data is loaded)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && blog && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "view_content",
+        page_type: "Blog Post",
+        page_title: blog.title,
+        content_type: "article",
+        content_id: blog._id,
+        author: blog.author,
+        publish_date: blog.createdAt,
+        tags: blog.tags ? blog.tags.join(", ") : ""
+      });
+    }
+  }, [loading, blog]);
+
   const fetchBlog = async () => {
     try {
       setLoading(true)
@@ -77,6 +96,20 @@ const BlogDetailPage = () => {
   const handleShare = (platform) => {
     const url = window.location.href
     const title = blog?.title || ""
+
+    // ---------------------------------------------------------
+    // GTM Event: share (Triggered on share button click)
+    // ---------------------------------------------------------
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "share",
+        method: platform,
+        content_type: "article",
+        item_id: blog?._id,
+        content_title: title
+      });
+    }
 
     const shareUrls = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
@@ -251,4 +284,4 @@ const BlogDetailPage = () => {
   )
 }
 
-export default BlogDetailPage
+export default BlogDetailPage;

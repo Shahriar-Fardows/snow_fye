@@ -35,6 +35,11 @@ const ProductPage = () => {
 
   const { user } = useAuthContext()
 
+  // Helper to format price for calculations
+  const formatPrice = (price) => {
+    return typeof price === "string" ? Number.parseInt(price) : price
+  }
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -52,7 +57,7 @@ const ProductPage = () => {
         let highestPrice = 0
 
         data.forEach((product) => {
-          const price = typeof product.price === "string" ? Number.parseInt(product.price) : product.price
+          const price = formatPrice(product.price)
           if (price > highestPrice) highestPrice = price
 
           if (product.currency && !currency) {
@@ -74,6 +79,7 @@ const ProductPage = () => {
         setMaxPrice(highestPrice)
         setPriceRange([0, highestPrice])
         setError(null)
+
       } catch (err) {
         setError("Failed to fetch products. Please try again later.")
         console.error("Error fetching products:", err)
@@ -84,6 +90,31 @@ const ProductPage = () => {
 
     fetchProducts()
   }, [])
+
+  // ---------------------------------------------------------
+  // GTM Event: view_item_list
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!loading && filteredProducts.length > 0 && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null }); // Clear previous ecommerce object
+      window.dataLayer.push({
+        event: "view_item_list",
+        ecommerce: {
+          item_list_name: "All Products",
+          items: filteredProducts.slice(0, 10).map((product, index) => ({
+            item_id: product._id,
+            item_name: product.title,
+            price: formatPrice(product.price),
+            currency: product.currency || currency,
+            index: index,
+            item_brand: "Your Brand", // Replace with actual brand if available
+            item_category: "General", // Replace with actual category if available
+          }))
+        }
+      });
+    }
+  }, [loading]); // Only triggering on initial load finish to avoid spamming on every filter change
 
   useEffect(() => {
     let filtered = [...products]
@@ -97,7 +128,7 @@ const ProductPage = () => {
     }
 
     filtered = filtered.filter((product) => {
-      const price = typeof product.price === "string" ? Number.parseInt(product.price) : product.price
+      const price = formatPrice(product.price)
       return price >= priceRange[0] && price <= priceRange[1]
     })
 
@@ -120,16 +151,12 @@ const ProductPage = () => {
     switch (sortBy) {
       case "price-low":
         filtered.sort((a, b) => {
-          const priceA = typeof a.price === "string" ? Number.parseInt(a.price) : a.price
-          const priceB = typeof b.price === "string" ? Number.parseInt(b.price) : b.price
-          return priceA - priceB
+          return formatPrice(a.price) - formatPrice(b.price)
         })
         break
       case "price-high":
         filtered.sort((a, b) => {
-          const priceA = typeof a.price === "string" ? Number.parseInt(a.price) : a.price
-          const priceB = typeof b.price === "string" ? Number.parseInt(b.price) : b.price
-          return priceB - priceA
+          return formatPrice(b.price) - formatPrice(a.price)
         })
         break
       case "name":
@@ -142,10 +169,6 @@ const ProductPage = () => {
     setFilteredProducts(filtered)
   }, [products, searchTerm, priceRange, selectedColors, selectedSizes, sortBy])
 
-  const formatPrice = (price) => {
-    return typeof price === "string" ? Number.parseInt(price) : price
-  }
-
   const handleColorFilter = (color) => {
     setSelectedColors((prev) => (prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]))
   }
@@ -155,6 +178,28 @@ const ProductPage = () => {
   }
 
   const handleAddToCart = async (product) => {
+    // ---------------------------------------------------------
+    // GTM Event: add_to_cart
+    // ---------------------------------------------------------
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "add_to_cart",
+        ecommerce: {
+          currency: product.currency || currency,
+          value: formatPrice(product.price),
+          items: [{
+            item_id: product._id,
+            item_name: product.title,
+            price: formatPrice(product.price),
+            quantity: 1,
+            item_variant: selectedColors.length > 0 ? selectedColors[0] : "", // Optional: pushing first selected filter if any
+          }]
+        }
+      });
+    }
+
     try {
       if (user?.email) {
         await axios.post("/api/cart", {
@@ -269,9 +314,8 @@ const ProductPage = () => {
               <button
                 key={color}
                 onClick={() => handleColorFilter(color)}
-                className={`w-8 h-8 rounded-full border-2 ${
-                  selectedColors.includes(color) ? "border-gray-900 ring-2 ring-gray-300" : "border-gray-300"
-                }`}
+                className={`w-8 h-8 rounded-full border-2 ${selectedColors.includes(color) ? "border-gray-900 ring-2 ring-gray-300" : "border-gray-300"
+                  }`}
                 style={{ backgroundColor: color }}
                 title={color}
               />
@@ -289,11 +333,10 @@ const ProductPage = () => {
               <button
                 key={size}
                 onClick={() => handleSizeFilter(size)}
-                className={`px-3 py-1 text-sm border rounded ${
-                  selectedSizes.includes(size)
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
-                }`}
+                className={`px-3 py-1 text-sm border rounded ${selectedSizes.includes(size)
+                  ? "bg-gray-900 text-white border-gray-900"
+                  : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+                  }`}
               >
                 {size}
               </button>
@@ -396,7 +439,7 @@ const ProductPage = () => {
                     <Filter className="h-4 w-4" />
                     Filters
                   </Button>
-                  
+
                   <p className="text-gray-600 text-sm sm:text-base">
                     Showing {filteredProducts.length} of {products.length} products
                   </p>
@@ -444,7 +487,7 @@ const ProductPage = () => {
                             {Math.round(
                               ((formatPrice(product.compareAtPrice) - formatPrice(product.price)) /
                                 formatPrice(product.compareAtPrice)) *
-                                100,
+                              100,
                             )}
                             % OFF
                           </Badge>
@@ -534,4 +577,4 @@ const ProductPage = () => {
   )
 }
 
-export default ProductPage
+export default ProductPage;

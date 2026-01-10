@@ -49,6 +49,18 @@ const LoginPage = () => {
       const userCredential = await loginUser(email, password);
       const user = userCredential.user;
 
+      // ---------------------------------------------------------
+      // GTM Event: login
+      // ---------------------------------------------------------
+      if (typeof window !== "undefined") {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: "login",
+          method: "email", // Recommended GA4 parameter
+          user_id: user.uid // Helps with User-ID tracking in GA4
+        });
+      }
+
       // Store user name in cookies for 30 days
       const expires = new Date();
       expires.setTime(expires.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -101,7 +113,6 @@ const LoginPage = () => {
         confirmButtonColor: "#000000",
       });
     }
-
   };
 
   return (
@@ -210,17 +221,6 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* Forgot Password Link */}
-          <div className="text-right mt-4">
-            <a
-              href="/forgot-password"
-              className="text-sm text-black hover:underline transition-colors"
-            >
-              Forgot your password?
-            </a>
-          </div>
-
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -233,19 +233,6 @@ const LoginPage = () => {
             )}
           </button>
         </form>
-
-        {/* Sign up link */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{" "}
-            <a
-              href="/signup"
-              className="font-medium text-black hover:underline transition-colors"
-            >
-              Sign up here
-            </a>
-          </p>
-        </div>
       </div>
     </div>
   );
