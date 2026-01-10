@@ -99,6 +99,27 @@ const ProductDetailsPage = () => {
       const data = await response.json();
       setProduct(data);
 
+      // GA4 view_item
+      if (typeof window !== "undefined") {
+        window.dataLayer = window.dataLayer || [];
+        // Optional: Clear previous ecommerce object
+        window.dataLayer.push({ ecommerce: null });
+        window.dataLayer.push({
+          event: "view_item",
+          ecommerce: {
+            currency: data.currency || "BDT",
+            value: typeof data.price === "string" ? Number.parseInt(data.price) : data.price,
+            items: [
+              {
+                item_id: data._id,
+                item_name: data.title,
+                price: typeof data.price === "string" ? Number.parseInt(data.price) : data.price,
+              },
+            ],
+          },
+        });
+      }
+
       if (data.variants && data.variants.length > 0) {
         setSelectedColor(data.variants[0].color);
         if (data.variants[0].sizes && data.variants[0].sizes.length > 0) {
@@ -187,6 +208,28 @@ const ProductDetailsPage = () => {
           selectedSize: selectedSize,
         });
 
+        // GA4 add_to_cart (Logged In User)
+        if (typeof window !== "undefined") {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({ ecommerce: null });
+          window.dataLayer.push({
+            event: "add_to_cart",
+            ecommerce: {
+              currency: product.currency || "BDT",
+              value: formatPrice(product.price) * quantity,
+              items: [
+                {
+                  item_id: product._id,
+                  item_name: product.title,
+                  price: formatPrice(product.price),
+                  quantity: quantity,
+                  item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),
+                },
+              ],
+            },
+          });
+        }
+
         Swal.fire({
           title: "Added to Cart!",
           text: `${quantity} x ${product.title} has been added to your cart.`,
@@ -196,6 +239,28 @@ const ProductDetailsPage = () => {
         });
       } else {
         addToCart(product, quantity, selectedColor, selectedSize);
+
+        // GA4 add_to_cart (Guest User - Added Fix)
+        if (typeof window !== "undefined") {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({ ecommerce: null });
+          window.dataLayer.push({
+            event: "add_to_cart",
+            ecommerce: {
+              currency: product.currency || "BDT",
+              value: formatPrice(product.price) * quantity,
+              items: [
+                {
+                  item_id: product._id,
+                  item_name: product.title,
+                  price: formatPrice(product.price),
+                  quantity: quantity,
+                  item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),
+                },
+              ],
+            },
+          });
+        }
 
         Swal.fire({
           title: "Added to Cart!",
@@ -218,6 +283,27 @@ const ProductDetailsPage = () => {
   };
 
   const handleBuyNow = () => {
+    // GA4 begin_checkout
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "begin_checkout",
+        ecommerce: {
+          currency: product.currency || "BDT",
+          value: formatPrice(product.price) * quantity,
+          items: [
+            {
+              item_id: product._id,
+              item_name: product.title,
+              price: formatPrice(product.price),
+              quantity: quantity,
+            },
+          ],
+        },
+      });
+    }
+
     if (!selectedColor && product.variants && product.variants.length > 0) {
       Swal.fire({
         title: "Please select a color",
@@ -338,6 +424,30 @@ const ProductDetailsPage = () => {
       const orderResponse = await axios.post("/api/orders", orderData);
 
       if (orderResponse.status === 200 || orderResponse.status === 201) {
+        // GA4 purchase
+        if (typeof window !== "undefined") {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({ ecommerce: null });
+          window.dataLayer.push({
+            event: "purchase",
+            ecommerce: {
+              transaction_id: orderResponse.data._id || orderResponse.data.orderId,
+              currency: product.currency || "BDT",
+              value: calculateTotal(),
+              shipping: getFinalDeliveryCharge(),
+              items: [
+                {
+                  item_id: product._id,
+                  item_name: product.title,
+                  price: formatPrice(product.price),
+                  quantity: quantity,
+                  item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),
+                },
+              ],
+            },
+          });
+        }
+
         // Send invoice email
         try {
           const orderId = orderResponse.data._id || orderResponse.data.orderId;
@@ -518,7 +628,7 @@ const ProductDetailsPage = () => {
                     {Math.round(
                       ((formatPrice(product.compareAtPrice) - formatPrice(product.price)) /
                         formatPrice(product.compareAtPrice)) *
-                        100
+                      100
                     )}
                     % OFF
                   </span>
@@ -547,9 +657,8 @@ const ProductDetailsPage = () => {
                       <button
                         key={index}
                         onClick={() => handleColorSelection(variant.color)}
-                        className={`w-8 h-8 rounded-full border-2 ${
-                          selectedColor === variant.color ? "border-gray-900" : "border-gray-300"
-                        }`}
+                        className={`w-8 h-8 rounded-full border-2 ${selectedColor === variant.color ? "border-gray-900" : "border-gray-300"
+                          }`}
                         style={{ backgroundColor: variant.color }}
                         title={variant.color}
                       />
@@ -569,11 +678,10 @@ const ProductDetailsPage = () => {
                         <button
                           key={size}
                           onClick={() => setSelectedSize(size)}
-                          className={`px-4 py-2 text-sm border rounded ${
-                            selectedSize === size
+                          className={`px-4 py-2 text-sm border rounded ${selectedSize === size
                               ? "border-gray-900 bg-gray-900 text-white"
                               : "border-gray-300 bg-white text-gray-900 hover:border-gray-900"
-                          }`}
+                            }`}
                         >
                           {size}
                         </button>
