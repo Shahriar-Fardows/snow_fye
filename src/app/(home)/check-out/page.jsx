@@ -329,13 +329,25 @@ const CheckoutPage = () => {
         const orderId = orderResponse.data._id || orderResponse.data.orderId
 
         // ---------------------------------------------------------
-        // GTM Event: purchase
+        // GTM Event: purchase (With Customer Data)
         // ---------------------------------------------------------
         if (typeof window !== "undefined") {
           window.dataLayer = window.dataLayer || [];
           window.dataLayer.push({ ecommerce: null });
           window.dataLayer.push({
             event: "purchase",
+            // 👇 CUSTOMER DATA ADDED HERE
+            customer_data: {
+              email: formData.email,
+              phone: formData.phone,
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              address: formData.address,
+              city: formData.city,
+              postal_code: formData.postalCode,
+              country: "Bangladesh"
+            },
+            // 👆 CUSTOMER DATA END
             ecommerce: {
               transaction_id: orderId,
               value: totalAmount,
