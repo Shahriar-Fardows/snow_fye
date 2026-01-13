@@ -5,24 +5,26 @@ import { useEffect, useState } from "react";
 const JewelryBannerfull = () => {
   const [bannerData, setBannerData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchBannerData = async () => {
       try {
         const response = await fetch("/api/ads-banner");
         if (!response.ok) {
-          throw new Error("Failed to fetch banner data");
+            console.error("Failed to fetch banner data");
+            return;
         }
         const data = await response.json();
-        if (data && data.length >= 4) {
-          setBannerData(data[3]);
-        } else {
-          throw new Error("Banner data not found");
+        
+        // UPDATED: অ্যারের ইনডেক্স না দেখে সরাসরি Position 4 খুঁজছি
+        const fullWidthBanner = data.find(b => b.position === 4);
+
+        if (fullWidthBanner) {
+          setBannerData(fullWidthBanner);
         }
-        setLoading(false);
       } catch (err) {
-        setError(err.message);
+        console.error(err.message);
+      } finally {
         setLoading(false);
       }
     };
@@ -32,22 +34,15 @@ const JewelryBannerfull = () => {
 
   if (loading)
     return (
-      <div className="w-full h-screen flex items-center justify-center bg-gray-100 text-xl text-gray-600">
-        Loading...
+      <div className="w-full h-60 flex items-center justify-center bg-gray-100 text-gray-600">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-black"></div>
       </div>
     );
-  if (error)
-    return (
-      <div className="w-full h-screen flex items-center justify-center bg-gray-100 text-xl text-red-600">
-        Error: {error}
-      </div>
-    );
-  if (!bannerData)
-    return (
-      <div className="w-full h-screen flex items-center justify-center bg-gray-100 text-xl text-gray-600">
-        No banner data available
-      </div>
-    );
+
+  // 👇 ডাটা না থাকলে কিছুই রিটার্ন করবে না (সেকশন হাইড হয়ে যাবে)
+  if (!bannerData) {
+    return null;
+  }
 
   return (
     <section className="container mx-auto p-4 relative w-full">

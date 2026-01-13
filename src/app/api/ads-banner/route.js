@@ -1,7 +1,7 @@
 import clientPromise from "@/lib/dbConnect";
 import { ObjectId } from "mongodb";
 
-// 📌 GET: সব banner বা নির্দিষ্ট ID দিয়ে খুঁজবে
+// 📌 GET: সব banner বা নির্দিষ্ট ID দিয়ে খুঁজবে
 export async function GET(req) {
   try {
     const client = await clientPromise;
@@ -14,7 +14,9 @@ export async function GET(req) {
     if (id) {
       banners = await db.collection("adsBanner").findOne({ _id: new ObjectId(id) });
     } else {
-      banners = await db.collection("adsBanner").find().toArray();
+      // UPDATED: এখানে .sort({ position: 1 }) যোগ করা হয়েছে
+      // 1 মানে Ascending (ছোট থেকে বড়: 1, 2, 3...)
+      banners = await db.collection("adsBanner").find().sort({ position: 1 }).toArray();
     }
 
     return new Response(JSON.stringify(banners), {
@@ -28,7 +30,7 @@ export async function GET(req) {
   }
 }
 
-// 📌 POST: Add a new banner (any data)
+// 📌 POST: Add a new banner
 export async function POST(req) {
   try {
     const client = await clientPromise;
@@ -39,6 +41,11 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: "No data provided" }), {
         status: 400,
       });
+    }
+
+    // UPDATED: Position কে জোর করে Number এ কনভার্ট করা হচ্ছে (Safety check)
+    if (body.position) {
+      body.position = parseInt(body.position);
     }
 
     const result = await db.collection("adsBanner").insertOne(body);
@@ -66,6 +73,11 @@ export async function PUT(req) {
       });
     }
 
+    // UPDATED: আপডেটের সময়ও Position কে Number এ কনভার্ট করা হচ্ছে
+    if (updateData.position) {
+      updateData.position = parseInt(updateData.position);
+    }
+
     const result = await db.collection("adsBanner").updateOne(
       { _id: new ObjectId(id) },
       { $set: updateData }
@@ -73,7 +85,7 @@ export async function PUT(req) {
 
     return new Response(JSON.stringify({ message: "Banner updated", result }), {
       status: 200,
-    });
+      });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,

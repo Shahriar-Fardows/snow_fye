@@ -4,7 +4,7 @@ import { Edit, ImageIcon, Plus, Save, Trash2, Upload, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useCloudinary } from '../../../../hooks/useCloudinary';
 
-// Simple Alert Component
+// Simple Alert Component (Same as before)
 const SimpleAlert = ({ type, title, message, onConfirm, onCancel, showCancel }) => {
   const getIcon = () => {
     switch(type) {
@@ -65,7 +65,8 @@ const BannerDashboard = () => {
     title: '',
     subtitle: '',
     image: '',
-    buttonLink: ''
+    buttonLink: '',
+    position: '1' // UPDATED: Added position field
   });
 
   const showAlert = (type, title, message, callback, showCancel = false) => {
@@ -80,7 +81,9 @@ const BannerDashboard = () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/ads-banner');
-      setBanners(response.data);
+      // UPDATED: Sort banners by position (ascending)
+      const sortedBanners = response.data.sort((a, b) => (a.position || 0) - (b.position || 0));
+      setBanners(sortedBanners);
     } catch (error) {
       console.error('Error fetching banners:', error);
       showAlert('error', 'Error', 'Failed to load banners');
@@ -110,9 +113,21 @@ const BannerDashboard = () => {
       showAlert('warning', 'Limit Reached', 'You can add maximum 4 banners only');
       return;
     }
+    
+    // UPDATED: Find the first available position automatically
+    const takenPositions = banners.map(b => parseInt(b.position));
+    let nextPosition = 1;
+    for(let i = 1; i <= 4; i++) {
+        if(!takenPositions.includes(i)) {
+            nextPosition = i;
+            break;
+        }
+    }
+
     setEditMode(false);
     setCurrentBanner(null);
-    setFormData({ title: '', subtitle: '', image: '', buttonLink: '' });
+    // UPDATED: Initialize with the calculated next position
+    setFormData({ title: '', subtitle: '', image: '', buttonLink: '', position: nextPosition.toString() });
     setImagePreview('');
     setSelectedFile(null);
     setShowModal(true);
@@ -125,7 +140,8 @@ const BannerDashboard = () => {
       title: banner.title,
       subtitle: banner.subtitle,
       image: banner.image,
-      buttonLink: banner.buttonLink
+      buttonLink: banner.buttonLink,
+      position: banner.position ? banner.position.toString() : '1' // UPDATED: Load existing position
     });
     setImagePreview(banner.image);
     setSelectedFile(null);
@@ -167,7 +183,8 @@ const BannerDashboard = () => {
         title: formData.title,
         subtitle: formData.subtitle,
         image: imageUrl,
-        buttonLink: formData.buttonLink
+        buttonLink: formData.buttonLink,
+        position: parseInt(formData.position) // UPDATED: Send position to backend
       };
 
       if (editMode) {
@@ -265,7 +282,12 @@ const BannerDashboard = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {banners.map((banner) => (
-              <div key={banner._id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+              <div key={banner._id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow relative">
+                {/* UPDATED: Show Position Badge */}
+                <div className="absolute top-2 left-2 z-10 bg-black/70 text-white px-2 py-1 rounded text-xs font-bold shadow-sm border border-white/20">
+                  Banner #{banner.position || '?'}
+                </div>
+                
                 <div className="relative h-48 bg-gray-100">
                   {banner.image ? (
                     <img src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
@@ -332,6 +354,25 @@ const BannerDashboard = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  
+                  {/* UPDATED: Added Position Selector Dropdown */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Banner Position <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={formData.position}
+                      onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-white"
+                    >
+                      <option value="1">Position 1 (Big Left)</option>
+                      <option value="2">Position 2 (Top Right)</option>
+                      <option value="3">Position 3 (Bottom Right)</option>
+                      <option value="4">Position 4 (Full Width)</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">Select where this banner should appear</p>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Title <span className="text-red-500">*</span>
