@@ -13,248 +13,28 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import Swal from "sweetalert2"
 
-const ProductPage = () => {
-  const [products, setProducts] = useState([])
-  const [filteredProducts, setFilteredProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showFilters, setShowFilters] = useState(false)
-
-  // Filter states
-  const [priceRange, setPriceRange] = useState([0, 1000])
-  const [selectedColors, setSelectedColors] = useState([])
-  const [selectedSizes, setSelectedSizes] = useState([])
-  const [sortBy, setSortBy] = useState("default")
-  const [searchTerm, setSearchTerm] = useState("")
-
-  // Available filter options
-  const [availableColors, setAvailableColors] = useState([])
-  const [availableSizes, setAvailableSizes] = useState([])
-  const [maxPrice, setMaxPrice] = useState(1000)
-  const [currency, setCurrency] = useState("৳")
-
-  const { user } = useAuthContext()
-
-  // Helper to format price for calculations
-  const formatPrice = (price) => {
-    return typeof price === "string" ? Number.parseInt(price) : price
-  }
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch("/api/products")
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data = await response.json()
-        setProducts(data)
-        setFilteredProducts(data)
-
-        const colors = new Set()
-        const sizes = new Set()
-        let highestPrice = 0
-
-        data.forEach((product) => {
-          const price = formatPrice(product.price)
-          if (price > highestPrice) highestPrice = price
-
-          if (product.currency && !currency) {
-            setCurrency(product.currency)
-          }
-
-          if (product.variants) {
-            product.variants.forEach((variant) => {
-              if (variant.color) colors.add(variant.color)
-              if (variant.sizes) {
-                variant.sizes.forEach((size) => sizes.add(size))
-              }
-            })
-          }
-        })
-
-        setAvailableColors(Array.from(colors))
-        setAvailableSizes(Array.from(sizes))
-        setMaxPrice(highestPrice)
-        setPriceRange([0, highestPrice])
-        setError(null)
-
-      } catch (err) {
-        setError("Failed to fetch products. Please try again later.")
-        console.error("Error fetching products:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProducts()
-  }, [])
-
-  // ---------------------------------------------------------
-  // GTM Event: view_item_list
-  // ---------------------------------------------------------
-  useEffect(() => {
-    if (!loading && filteredProducts.length > 0 && typeof window !== "undefined") {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ ecommerce: null }); // Clear previous ecommerce object
-      window.dataLayer.push({
-        event: "view_item_list",
-        ecommerce: {
-          item_list_name: "All Products",
-          items: filteredProducts.slice(0, 10).map((product, index) => ({
-            item_id: product._id,
-            item_name: product.title,
-            price: formatPrice(product.price),
-            currency: product.currency || currency,
-            index: index,
-            item_brand: "Your Brand", // Replace with actual brand if available
-            item_category: "General", // Replace with actual category if available
-          }))
-        }
-      });
-    }
-  }, [loading]); // Only triggering on initial load finish to avoid spamming on every filter change
-
-  useEffect(() => {
-    let filtered = [...products]
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (product) =>
-          product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    }
-
-    filtered = filtered.filter((product) => {
-      const price = formatPrice(product.price)
-      return price >= priceRange[0] && price <= priceRange[1]
-    })
-
-    if (selectedColors.length > 0) {
-      filtered = filtered.filter(
-        (product) => product.variants && product.variants.some((variant) => selectedColors.includes(variant.color)),
-      )
-    }
-
-    if (selectedSizes.length > 0) {
-      filtered = filtered.filter(
-        (product) =>
-          product.variants &&
-          product.variants.some(
-            (variant) => variant.sizes && variant.sizes.some((size) => selectedSizes.includes(size)),
-          ),
-      )
-    }
-
-    switch (sortBy) {
-      case "price-low":
-        filtered.sort((a, b) => {
-          return formatPrice(a.price) - formatPrice(b.price)
-        })
-        break
-      case "price-high":
-        filtered.sort((a, b) => {
-          return formatPrice(b.price) - formatPrice(a.price)
-        })
-        break
-      case "name":
-        filtered.sort((a, b) => a.title.localeCompare(b.title))
-        break
-      default:
-        break
-    }
-
-    setFilteredProducts(filtered)
-  }, [products, searchTerm, priceRange, selectedColors, selectedSizes, sortBy])
-
-  const handleColorFilter = (color) => {
-    setSelectedColors((prev) => (prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]))
-  }
-
-  const handleSizeFilter = (size) => {
-    setSelectedSizes((prev) => (prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]))
-  }
-
-  const handleAddToCart = async (product) => {
-    // ---------------------------------------------------------
-    // GTM Event: add_to_cart
-    // ---------------------------------------------------------
-    if (typeof window !== "undefined") {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ ecommerce: null });
-      window.dataLayer.push({
-        event: "add_to_cart",
-        ecommerce: {
-          currency: product.currency || currency,
-          value: formatPrice(product.price),
-          items: [{
-            item_id: product._id,
-            item_name: product.title,
-            price: formatPrice(product.price),
-            quantity: 1,
-            item_variant: selectedColors.length > 0 ? selectedColors[0] : "", // Optional: pushing first selected filter if any
-          }]
-        }
-      });
-    }
-
-    try {
-      if (user?.email) {
-        await axios.post("/api/cart", {
-          email: user.email,
-          productImage: product.mainImages?.[0]?.url || "",
-          price: product.price,
-          title: product.title,
-          currency: product.currency,
-          quantity: 1,
-        })
-
-        window.dispatchEvent(new CustomEvent("cartUpdated", { detail: { product, action: "add" } }))
-
-        Swal.fire({
-          title: "Added to Cart!",
-          text: `${product.title} has been added to your cart.`,
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        })
-      } else {
-        addToCart(product, 1)
-
-        window.dispatchEvent(new CustomEvent("cartUpdated", { detail: { product, action: "add" } }))
-
-        Swal.fire({
-          title: "Added to Cart!",
-          text: `${product.title} has been added to your cart. Please login to sync your cart.`,
-          icon: "success",
-          timer: 3000,
-          showConfirmButton: false,
-        })
-      }
-    } catch (error) {
-      console.error("Error adding to cart:", error)
-      Swal.fire({
-        title: "Error!",
-        text: "Failed to add product to cart. Please try again.",
-        icon: "error",
-        timer: 2000,
-        showConfirmButton: false,
-      })
-    }
-  }
-
-  const clearFilters = () => {
-    setSearchTerm("")
-    setPriceRange([0, maxPrice])
-    setSelectedColors([])
-    setSelectedSizes([])
-    setSortBy("default")
-  }
-
-  // Filter Sidebar Component
-  const FilterSidebar = ({ isMobile = false }) => (
+// ----------------------------------------------------------------------
+// 1. FilterSidebar কে ProductPage এর বাইরে নিয়ে আসা হয়েছে (Fix)
+// ----------------------------------------------------------------------
+const FilterSidebar = ({
+  isMobile = false,
+  setShowFilters,
+  searchTerm,
+  setSearchTerm,
+  priceRange,
+  setPriceRange,
+  maxPrice,
+  currency,
+  availableColors,
+  selectedColors,
+  handleColorFilter,
+  availableSizes,
+  selectedSizes,
+  handleSizeFilter,
+  clearFilters,
+  filteredCount
+}) => {
+  return (
     <div className={`bg-white rounded-lg shadow-sm p-6 space-y-6 ${isMobile ? 'h-full overflow-y-auto' : ''}`}>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
@@ -334,8 +114,8 @@ const ProductPage = () => {
                 key={size}
                 onClick={() => handleSizeFilter(size)}
                 className={`px-3 py-1 text-sm border rounded ${selectedSizes.includes(size)
-                  ? "bg-gray-900 text-white border-gray-900"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
                   }`}
               >
                 {size}
@@ -360,11 +140,250 @@ const ProductPage = () => {
           onClick={() => setShowFilters(false)}
           className="w-full"
         >
-          Show {filteredProducts.length} Products
+          Show {filteredCount} Products
         </Button>
       )}
     </div>
   )
+}
+
+// ----------------------------------------------------------------------
+// 2. Main ProductPage Component
+// ----------------------------------------------------------------------
+const ProductPage = () => {
+  const [products, setProducts] = useState([])
+  const [filteredProducts, setFilteredProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [showFilters, setShowFilters] = useState(false)
+
+  // Filter states
+  const [priceRange, setPriceRange] = useState([0, 1000])
+  const [selectedColors, setSelectedColors] = useState([])
+  const [selectedSizes, setSelectedSizes] = useState([])
+  const [sortBy, setSortBy] = useState("default")
+  const [searchTerm, setSearchTerm] = useState("")
+
+  // Available filter options
+  const [availableColors, setAvailableColors] = useState([])
+  const [availableSizes, setAvailableSizes] = useState([])
+  const [maxPrice, setMaxPrice] = useState(1000)
+  const [currency, setCurrency] = useState("৳")
+
+  const { user } = useAuthContext()
+
+  // Helper to format price for calculations
+  const formatPrice = (price) => {
+    return typeof price === "string" ? Number.parseInt(price) : price
+  }
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch("/api/products")
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const data = await response.json()
+        setProducts(data)
+        setFilteredProducts(data)
+
+        const colors = new Set()
+        const sizes = new Set()
+        let highestPrice = 0
+
+        data.forEach((product) => {
+          const price = formatPrice(product.price)
+          if (price > highestPrice) highestPrice = price
+
+          if (product.currency && !currency) {
+            setCurrency(product.currency)
+          }
+
+          if (product.variants) {
+            product.variants.forEach((variant) => {
+              if (variant.color) colors.add(variant.color)
+              if (variant.sizes) {
+                variant.sizes.forEach((size) => sizes.add(size))
+              }
+            })
+          }
+        })
+
+        setAvailableColors(Array.from(colors))
+        setAvailableSizes(Array.from(sizes))
+        setMaxPrice(highestPrice)
+        setPriceRange([0, highestPrice])
+        setError(null)
+
+      } catch (err) {
+        setError("Failed to fetch products. Please try again later.")
+        console.error("Error fetching products:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
+  // GTM Event: view_item_list
+  useEffect(() => {
+    if (!loading && filteredProducts.length > 0 && typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "view_item_list",
+        ecommerce: {
+          item_list_name: "All Products",
+          items: filteredProducts.slice(0, 10).map((product, index) => ({
+            item_id: product._id,
+            item_name: product.title,
+            price: formatPrice(product.price),
+            currency: product.currency || currency,
+            index: index,
+            item_brand: "Your Brand",
+            item_category: "General",
+          }))
+        }
+      });
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    let filtered = [...products]
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (product) =>
+          product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    }
+
+    filtered = filtered.filter((product) => {
+      const price = formatPrice(product.price)
+      return price >= priceRange[0] && price <= priceRange[1]
+    })
+
+    if (selectedColors.length > 0) {
+      filtered = filtered.filter(
+        (product) => product.variants && product.variants.some((variant) => selectedColors.includes(variant.color)),
+      )
+    }
+
+    if (selectedSizes.length > 0) {
+      filtered = filtered.filter(
+        (product) =>
+          product.variants &&
+          product.variants.some(
+            (variant) => variant.sizes && variant.sizes.some((size) => selectedSizes.includes(size)),
+          ),
+      )
+    }
+
+    switch (sortBy) {
+      case "price-low":
+        filtered.sort((a, b) => {
+          return formatPrice(a.price) - formatPrice(b.price)
+        })
+        break
+      case "price-high":
+        filtered.sort((a, b) => {
+          return formatPrice(b.price) - formatPrice(a.price)
+        })
+        break
+      case "name":
+        filtered.sort((a, b) => a.title.localeCompare(b.title))
+        break
+      default:
+        break
+    }
+
+    setFilteredProducts(filtered)
+  }, [products, searchTerm, priceRange, selectedColors, selectedSizes, sortBy])
+
+  const handleColorFilter = (color) => {
+    setSelectedColors((prev) => (prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]))
+  }
+
+  const handleSizeFilter = (size) => {
+    setSelectedSizes((prev) => (prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]))
+  }
+
+  const handleAddToCart = async (product) => {
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "add_to_cart",
+        ecommerce: {
+          currency: product.currency || currency,
+          value: formatPrice(product.price),
+          items: [{
+            item_id: product._id,
+            item_name: product.title,
+            price: formatPrice(product.price),
+            quantity: 1,
+            item_variant: selectedColors.length > 0 ? selectedColors[0] : "",
+          }]
+        }
+      });
+    }
+
+    try {
+      if (user?.email) {
+        await axios.post("/api/cart", {
+          email: user.email,
+          productImage: product.mainImages?.[0]?.url || "",
+          price: product.price,
+          title: product.title,
+          currency: product.currency,
+          quantity: 1,
+        })
+
+        window.dispatchEvent(new CustomEvent("cartUpdated", { detail: { product, action: "add" } }))
+
+        Swal.fire({
+          title: "Added to Cart!",
+          text: `${product.title} has been added to your cart.`,
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        })
+      } else {
+        addToCart(product, 1)
+
+        window.dispatchEvent(new CustomEvent("cartUpdated", { detail: { product, action: "add" } }))
+
+        Swal.fire({
+          title: "Added to Cart!",
+          text: `${product.title} has been added to your cart. Please login to sync your cart.`,
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        })
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to add product to cart. Please try again.",
+        icon: "error",
+        timer: 2000,
+        showConfirmButton: false,
+      })
+    }
+  }
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setPriceRange([0, maxPrice])
+    setSelectedColors([])
+    setSelectedSizes([])
+    setSortBy("default")
+  }
 
   if (loading) {
     return (
@@ -396,6 +415,9 @@ const ProductPage = () => {
     )
   }
 
+  // ----------------------------------------------------------------------
+  // 3. Render: FilterSidebar কে এখন Props দিয়ে কল করা হচ্ছে
+  // ----------------------------------------------------------------------
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -411,7 +433,24 @@ const ProductPage = () => {
           {/* Desktop Sidebar - Hidden on mobile */}
           <div className="hidden lg:block w-80 flex-shrink-0">
             <div className="sticky top-4">
-              <FilterSidebar />
+              <FilterSidebar
+                isMobile={false}
+                setShowFilters={setShowFilters}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
+                maxPrice={maxPrice}
+                currency={currency}
+                availableColors={availableColors}
+                selectedColors={selectedColors}
+                handleColorFilter={handleColorFilter}
+                availableSizes={availableSizes}
+                selectedSizes={selectedSizes}
+                handleSizeFilter={handleSizeFilter}
+                clearFilters={clearFilters}
+                filteredCount={filteredProducts.length}
+              />
             </div>
           </div>
 
@@ -419,7 +458,24 @@ const ProductPage = () => {
           {showFilters && (
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden">
               <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
-                <FilterSidebar isMobile={true} />
+                <FilterSidebar
+                  isMobile={true}
+                  setShowFilters={setShowFilters}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  priceRange={priceRange}
+                  setPriceRange={setPriceRange}
+                  maxPrice={maxPrice}
+                  currency={currency}
+                  availableColors={availableColors}
+                  selectedColors={selectedColors}
+                  handleColorFilter={handleColorFilter}
+                  availableSizes={availableSizes}
+                  selectedSizes={selectedSizes}
+                  handleSizeFilter={handleSizeFilter}
+                  clearFilters={clearFilters}
+                  filteredCount={filteredProducts.length}
+                />
               </div>
             </div>
           )}

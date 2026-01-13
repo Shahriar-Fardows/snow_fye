@@ -94,7 +94,8 @@ export default function HeroSection() {
           delay: 8000,
           disableOnInteraction: false,
         }}
-        loop={true}
+        // পরিবর্তন ১: যদি ১টির বেশি স্লাইড থাকে তবেই লুপ হবে
+        loop={banners.length > 1}
         onSwiper={setSwiperInstance}
         className="w-full h-full"
       >
@@ -236,18 +237,23 @@ export default function HeroSection() {
         })}
       </Swiper>
 
-      <button
-        onClick={handlePrevSlide}
-        className={`absolute ${isMobile ? "left-4 w-10 h-10" : "left-4 w-12 h-12"} top-1/2 -translate-y-1/2 rounded-full ${isMobile ? "bg-black/40" : "bg-white/20"} border border-white/30 shadow-lg flex items-center justify-center hover:${isMobile ? "bg-black/60" : "bg-white/30"} hover:scale-110 text-white z-20 transition-all duration-300`}
-      >
-        <ChevronLeft className={`${isMobile ? "w-5 h-5" : "w-6 h-6"} text-black`} />
-      </button>
-      <button
-        onClick={handleNextSlide}
-        className={`absolute ${isMobile ? "right-4 w-10 h-10" : "right-4 w-12 h-12"} top-1/2 -translate-y-1/2 rounded-full ${isMobile ? "bg-black/40" : "bg-white/20"} border border-white/30 shadow-lg flex items-center justify-center hover:${isMobile ? "bg-black/60" : "bg-white/30"} hover:scale-110 text-white z-20 transition-all duration-300`}
-      >
-        <ChevronRight className={`${isMobile ? "w-5 h-5" : "w-6 h-6"} text-black`} />
-      </button>
+      {/* পরিবর্তন ২: বাটনগুলো কন্ডিশনাল রেন্ডারিং করা হয়েছে */}
+      {banners.length > 1 && (
+        <>
+          <button
+            onClick={handlePrevSlide}
+            className={`absolute ${isMobile ? "left-4 w-10 h-10" : "left-4 w-12 h-12"} top-1/2 -translate-y-1/2 rounded-full ${isMobile ? "bg-black/40" : "bg-white/20"} border border-white/30 shadow-lg flex items-center justify-center hover:${isMobile ? "bg-black/60" : "bg-white/30"} hover:scale-110 text-white z-20 transition-all duration-300`}
+          >
+            <ChevronLeft className={`${isMobile ? "w-5 h-5" : "w-6 h-6"} text-black`} />
+          </button>
+          <button
+            onClick={handleNextSlide}
+            className={`absolute ${isMobile ? "right-4 w-10 h-10" : "right-4 w-12 h-12"} top-1/2 -translate-y-1/2 rounded-full ${isMobile ? "bg-black/40" : "bg-white/20"} border border-white/30 shadow-lg flex items-center justify-center hover:${isMobile ? "bg-black/60" : "bg-white/30"} hover:scale-110 text-white z-20 transition-all duration-300`}
+          >
+            <ChevronRight className={`${isMobile ? "w-5 h-5" : "w-6 h-6"} text-black`} />
+          </button>
+        </>
+      )}
     </section>
   )
 }
