@@ -24,7 +24,8 @@ export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isCartOpen, setIsCartOpen] = useState(false)
     const [cartItemCount, setCartItemCount] = useState(0)
-    const [logo, setLogo] = useState({ url: "", width: 120 })
+    // Logo default width logic removed in favor of CSS classes
+    const [logo, setLogo] = useState({ url: "" }) 
     const [searchQuery, setSearchQuery] = useState("")
     const [searchResults, setSearchResults] = useState([])
     const [isSearching, setIsSearching] = useState(false)
@@ -37,7 +38,7 @@ export default function Navbar() {
                 if (res.data.logo) {
                     setLogo({
                         url: res.data.logo.url || "",
-                        width: res.data.logo.width || 120,
+                        // width: res.data.logo.width || 120, // We will handle size via CSS
                     })
                 }
             } catch (error) {
@@ -96,12 +97,11 @@ export default function Navbar() {
                 const response = await axios.get("/api/products")
                 const products = response.data
                 
-                // Filter products based on search query
                 const filtered = products.filter(product =>
                     product.title.toLowerCase().includes(searchQuery.toLowerCase())
                 )
                 
-                setSearchResults(filtered.slice(0, 5)) // Show only first 5 results
+                setSearchResults(filtered.slice(0, 5))
             } catch (error) {
                 console.error("Error searching products:", error)
                 setSearchResults([])
@@ -125,17 +125,19 @@ export default function Navbar() {
             <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
-                        {/* Logo */}
-                        <div className="flex-shrink-0">
+                        {/* Logo Section */}
+                        <div className="flex-shrink-0 flex items-center">
                             <Link href="/">
                                 {logo.url ? (
                                     <img
                                         src={logo.url || "/placeholder.svg"}
                                         alt="Logo"
-                                        style={{ width: `${logo.width}px`, height: "auto" }}
+                                        // UPDATED: Fixed height for mobile (h-8/32px) and desktop (h-10/40px)
+                                        // w-auto ensures aspect ratio is maintained
+                                        className="h-8 md:h-10 w-auto object-contain max-w-[150px]"
                                     />
                                 ) : (
-                                    <span className="text-xl font-bold">snowfye</span>
+                                    <span className="text-xl font-bold text-gray-900">snowfye</span>
                                 )}
                             </Link>
                         </div>
@@ -156,7 +158,7 @@ export default function Navbar() {
                         </div>
 
                         {/* Right side icons */}
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2 sm:space-x-4">
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -179,21 +181,19 @@ export default function Navbar() {
                                     </Button>
                                 </Link>
                             )}
-                            <Link href="/cart">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-gray-700 hover:text-gray-900 relative"
-                                    onClick={() => setIsCartOpen(true)}
-                                >
-                                    <ShoppingCart className="h-5 w-5" />
-                                    {cartItemCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                                            {cartItemCount}
-                                        </span>
-                                    )}
-                                </Button>
-                            </Link>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-gray-700 hover:text-gray-900 relative"
+                                onClick={() => setIsCartOpen(true)}
+                            >
+                                <ShoppingCart className="h-5 w-5" />
+                                {cartItemCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                        {cartItemCount}
+                                    </span>
+                                )}
+                            </Button>
 
                             {/* Mobile menu button */}
                             <Button
@@ -212,14 +212,14 @@ export default function Navbar() {
             {/* Mobile Sidebar Overlay */}
             {isMobileMenuOpen && (
                 <div 
-                    className="fixed inset-0 bg-[#22212194] bg-opacity-50 z-60 md:hidden"
+                    className="fixed inset-0 bg-black/50 z-[60] md:hidden"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
 
             {/* Mobile Sidebar */}
             <div 
-                className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-70 transform transition-transform duration-300 ease-in-out md:hidden ${
+                className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-[70] transform transition-transform duration-300 ease-in-out md:hidden ${
                     isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
                 }`}
             >
@@ -230,7 +230,8 @@ export default function Navbar() {
                                 <img
                                     src={logo.url || "/placeholder.svg"}
                                     alt="Logo"
-                                    style={{ width: `${logo.width}px`, height: "auto" }}
+                                    // UPDATED: Consistent sizing for mobile sidebar
+                                    className="h-8 w-auto object-contain max-w-[120px]"
                                 />
                             ) : (
                                 <span className="text-xl font-bold">snowfye</span>
@@ -285,7 +286,7 @@ export default function Navbar() {
 
                         {/* Search Results */}
                         {searchQuery.length >= 2 && (
-                            <div className="max-w-7xl mx-auto absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+                            <div className="max-w-7xl mx-auto absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
                                 {isSearching ? (
                                     <div className="p-4 text-center text-gray-500">
                                         Searching...
@@ -302,10 +303,10 @@ export default function Navbar() {
                                                 <img
                                                     src={product.mainImages[0]?.url || "/placeholder.svg"}
                                                     alt={product.title}
-                                                    className="w-28 h-28 object-cover rounded"
+                                                    className="w-16 h-16 object-cover rounded"
                                                 />
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-medium text-gray-900">
+                                                    <p className="text-sm font-medium text-gray-900 line-clamp-1">
                                                         {product.title}
                                                     </p>
                                                     <p className="text-sm text-gray-600">

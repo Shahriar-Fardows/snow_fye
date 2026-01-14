@@ -225,6 +225,13 @@ const GeneralSettingsForm = () => {
                 </div>
               </Label>
 
+              {/* ---------- NEW: Size Instruction Added Here ---------- */}
+              <div className="text-center space-y-1">
+                <p className="text-xs text-gray-500 font-medium">Recommended: 300x80px</p>
+                <p className="text-[10px] text-gray-400">Max size: 2MB (PNG/SVG)</p>
+              </div>
+              {/* --------------------------------------------------- */}
+
               {uploading && (
                 <div className="flex items-center space-x-2 text-[#ff6c2f]">
                   <Loader2 className="w-4 h-4 animate-spin" />
