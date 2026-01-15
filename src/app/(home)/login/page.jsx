@@ -1,6 +1,7 @@
 "use client";
 
 import useAuthContext from "@/hooks/useAuthContext";
+import Link from "next/link"; // Link ইম্পোর্ট করা হয়েছে
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -49,15 +50,13 @@ const LoginPage = () => {
       const userCredential = await loginUser(email, password);
       const user = userCredential.user;
 
-      // ---------------------------------------------------------
       // GTM Event: login
-      // ---------------------------------------------------------
       if (typeof window !== "undefined") {
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
           event: "login",
-          method: "email", // Recommended GA4 parameter
-          user_id: user.uid // Helps with User-ID tracking in GA4
+          method: "email",
+          user_id: user.uid
         });
       }
 
@@ -77,10 +76,7 @@ const LoginPage = () => {
         showConfirmButton: false,
       });
 
-      // Reset form
       e.target.reset();
-
-      // Optional: Redirect to dashboard or home page
       router.push("/dashboard");
 
     } catch (error) {
@@ -112,11 +108,12 @@ const LoginPage = () => {
         text: errorMessage,
         confirmButtonColor: "#000000",
       });
+      setLoading(false); // Error হলে লোডিং বন্ধ করতে হবে
     }
   };
 
   return (
-    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 ">
+    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -138,11 +135,11 @@ const LoginPage = () => {
                 placeholder="your email"
                 disabled={loading}
                 required
-                className="peer relative h-12 w-full rounded-lg border border-slate-200 px-4 pl-12 text-slate-700 placeholder-transparent outline-none transition-all autofill:bg-white invalid: invalid: focus:border-black focus:outline-none invalid:focus: focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                className="peer relative h-12 w-full rounded-lg border border-slate-200 px-4 pl-12 text-slate-700 placeholder-transparent outline-none transition-all autofill:bg-white invalid:border-gray-500 invalid:text-gray-600 focus:border-black focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
               />
               <label
                 htmlFor="email"
-                className="absolute left-2 -top-2 z-[1] cursor-text px-2 text-xs text-slate-400 transition-all before:absolute before:top-0 before:left-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:left-10 peer-placeholder-shown:text-base peer-autofill:-top-2 peer-required:after: peer-required:after:content-['\00a0*'] peer-invalid: peer-focus:-top-2 peer-focus:left-2 peer-focus:cursor-default peer-focus:text-xs peer-focus:text-black peer-invalid:peer-focus: peer-disabled:cursor-not-allowed peer-disabled:text-slate-400 peer-disabled:before:bg-transparent"
+                className="absolute left-2 -top-2 z-[1] cursor-text px-2 text-xs text-slate-400 transition-all before:absolute before:top-0 before:left-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:left-10 peer-placeholder-shown:text-base peer-autofill:-top-2 peer-required:after:content-['\00a0*'] peer-required:after:text-gray-500 peer-focus:-top-2 peer-focus:left-2 peer-focus:cursor-default peer-focus:text-xs peer-focus:text-black peer-disabled:cursor-not-allowed peer-disabled:text-slate-400 peer-disabled:before:bg-transparent"
               >
                 Enter your email
               </label>
@@ -172,14 +169,16 @@ const LoginPage = () => {
                 placeholder="your password"
                 disabled={loading}
                 required
-                className="peer relative h-12 w-full rounded-lg border border-slate-200 px-4 pr-12 text-slate-700 placeholder-transparent outline-none transition-all autofill:bg-white invalid: invalid: focus:border-black focus:outline-none invalid:focus: focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                className="peer relative h-12 w-full rounded-lg border border-slate-200 px-4 pr-12 text-slate-700 placeholder-transparent outline-none transition-all autofill:bg-white invalid:border-gray-500 invalid:text-gray-600 focus:border-black focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
               />
               <label
                 htmlFor="password"
-                className="absolute left-2 -top-2 z-[1] cursor-text px-2 text-xs text-slate-400 transition-all before:absolute before:top-0 before:left-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:left-10 peer-placeholder-shown:text-base peer-autofill:-top-2 peer-required:after: peer-required:after:content-['\00a0*'] peer-invalid: peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-xs peer-focus:text-black peer-invalid:peer-focus: peer-disabled:cursor-not-allowed peer-disabled:text-slate-400 peer-disabled:before:bg-transparent"
+                className="absolute left-2 -top-2 z-[1] cursor-text px-2 text-xs text-slate-400 transition-all before:absolute before:top-0 before:left-0 before:z-[-1] before:block before:h-full before:w-full before:bg-white before:transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:left-10 peer-placeholder-shown:text-base peer-autofill:-top-2 peer-required:after:content-['\00a0*'] peer-required:after:text-gray-500 peer-focus:-top-2 peer-focus:cursor-default peer-focus:text-xs peer-focus:text-black peer-disabled:cursor-not-allowed peer-disabled:text-slate-400 peer-disabled:before:bg-transparent"
               >
                 Your password
               </label>
+              
+              {/* Eye Icon */}
               {showPassword ? (
                 <svg
                   onClick={() => setShowPassword(!showPassword)}
@@ -190,16 +189,8 @@ const LoginPage = () => {
                   stroke="currentColor"
                   strokeWidth="1.5"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               ) : (
                 <svg
@@ -211,14 +202,21 @@ const LoginPage = () => {
                   stroke="currentColor"
                   strokeWidth="1.5"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                 </svg>
               )}
             </div>
+
+            {/* --- FORGOT PASSWORD LINK START --- */}
+            <div className="flex justify-end">
+              <Link 
+                href="/forgot-password" 
+                className="text-sm font-medium text-gray-600 hover:text-black transition-colors"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+            {/* --- FORGOT PASSWORD LINK END --- */}
           </div>
 
           <button
@@ -233,6 +231,21 @@ const LoginPage = () => {
             )}
           </button>
         </form>
+
+        {/* --- SIGN UP LINK START --- */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link 
+              href="/signup" 
+              className="font-semibold text-black hover:underline transition-all"
+            >
+              Sign Up
+            </Link>
+          </p>
+        </div>
+        {/* --- SIGN UP LINK END --- */}
+
       </div>
     </div>
   );
