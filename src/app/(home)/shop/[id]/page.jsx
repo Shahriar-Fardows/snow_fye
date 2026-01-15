@@ -102,7 +102,6 @@ const ProductDetailsPage = () => {
       // GA4 view_item
       if (typeof window !== "undefined") {
         window.dataLayer = window.dataLayer || [];
-        // Optional: Clear previous ecommerce object
         window.dataLayer.push({ ecommerce: null });
         window.dataLayer.push({
           event: "view_item",
@@ -240,7 +239,7 @@ const ProductDetailsPage = () => {
       } else {
         addToCart(product, quantity, selectedColor, selectedSize);
 
-        // GA4 add_to_cart (Guest User - Added Fix)
+        // GA4 add_to_cart (Guest User)
         if (typeof window !== "undefined") {
           window.dataLayer = window.dataLayer || [];
           window.dataLayer.push({ ecommerce: null });
@@ -298,6 +297,7 @@ const ProductDetailsPage = () => {
               item_name: product.title,
               price: formatPrice(product.price),
               quantity: quantity,
+              item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),
             },
           ],
         },
@@ -335,6 +335,32 @@ const ProductDetailsPage = () => {
       setEstimatedDays(area.estimatedDays);
       setDeliveryNote(area.customData?.note || "");
       setFormData((prev) => ({ ...prev, city: area.area }));
+
+      // ✅ GA4 add_shipping_info (ADDED)
+      if (typeof window !== "undefined") {
+        const subtotal = calculateSubtotal();
+        const finalCharge = subtotal >= 2000 ? 0 : area.charge;
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ ecommerce: null });
+        window.dataLayer.push({
+          event: "add_shipping_info",
+          ecommerce: {
+            currency: product.currency || "BDT",
+            value: subtotal + finalCharge,
+            shipping_tier: area.area,
+            items: [
+              {
+                item_id: product._id,
+                item_name: product.title,
+                price: formatPrice(product.price),
+                quantity: quantity,
+                item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),
+              },
+            ],
+          },
+        });
+      }
     }
   };
 
@@ -424,12 +450,24 @@ const ProductDetailsPage = () => {
       const orderResponse = await axios.post("/api/orders", orderData);
 
       if (orderResponse.status === 200 || orderResponse.status === 201) {
-        // GA4 purchase
+        // ✅ GA4 purchase (ADDED CUSTOMER DATA)
         if (typeof window !== "undefined") {
           window.dataLayer = window.dataLayer || [];
           window.dataLayer.push({ ecommerce: null });
           window.dataLayer.push({
             event: "purchase",
+            // 👇 Customer Data for Enhanced Conversions
+            customer_data: {
+              email: formData.email,
+              phone: formData.phone,
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              address: formData.address,
+              city: formData.city,
+              postal_code: formData.postalCode,
+              country: "Bangladesh",
+            },
+            // 👆 End Customer Data
             ecommerce: {
               transaction_id: orderResponse.data._id || orderResponse.data.orderId,
               currency: product.currency || "BDT",
@@ -451,9 +489,6 @@ const ProductDetailsPage = () => {
         // Send invoice email
         try {
           const orderId = orderResponse.data._id || orderResponse.data.orderId;
-          console.log("🆔 Order ID from response:", orderId);
-          console.log("📦 Order Response:", orderResponse.data);
-
           const invoicePayload = {
             email: formData.email,
             orderId: orderId,
@@ -468,21 +503,16 @@ const ProductDetailsPage = () => {
             couponDiscount: orderData.couponDiscount || 0,
           };
 
-          console.log("📧 Full Invoice Payload:", JSON.stringify(invoicePayload, null, 2));
-
-          const invoiceResponse = await axios.post("/api/send-invoice", invoicePayload);
-          console.log("✅ Invoice sent successfully:", invoiceResponse.data);
+          await axios.post("/api/send-invoice", invoicePayload);
         } catch (emailError) {
-          console.error("❌ Full error object:", emailError);
-          console.error("Response data:", emailError.response?.data);
-          console.error("Response status:", emailError.response?.status);
-          console.error("Error message:", emailError.message);
-          // Continue anyway - order is already placed
+          console.error("Failed to send invoice email:", emailError);
         }
 
         Swal.fire({
           title: "Order Placed Successfully!",
-          text: `Your order has been placed. Invoice has been sent to ${formData.email}. Order ID: ${orderResponse.data._id || orderResponse.data.orderId || "Generated"}`,
+          text: `Your order has been placed. Invoice has been sent to ${formData.email}. Order ID: ${
+            orderResponse.data._id || orderResponse.data.orderId || "Generated"
+          }`,
           icon: "success",
           timer: 3000,
           showConfirmButton: false,
@@ -628,7 +658,7 @@ const ProductDetailsPage = () => {
                     {Math.round(
                       ((formatPrice(product.compareAtPrice) - formatPrice(product.price)) /
                         formatPrice(product.compareAtPrice)) *
-                      100
+                        100
                     )}
                     % OFF
                   </span>
@@ -657,8 +687,9 @@ const ProductDetailsPage = () => {
                       <button
                         key={index}
                         onClick={() => handleColorSelection(variant.color)}
-                        className={`w-8 h-8 rounded-full border-2 ${selectedColor === variant.color ? "border-gray-900" : "border-gray-300"
-                          }`}
+                        className={`w-8 h-8 rounded-full border-2 ${
+                          selectedColor === variant.color ? "border-gray-900" : "border-gray-300"
+                        }`}
                         style={{ backgroundColor: variant.color }}
                         title={variant.color}
                       />
@@ -678,10 +709,11 @@ const ProductDetailsPage = () => {
                         <button
                           key={size}
                           onClick={() => setSelectedSize(size)}
-                          className={`px-4 py-2 text-sm border rounded ${selectedSize === size
+                          className={`px-4 py-2 text-sm border rounded ${
+                            selectedSize === size
                               ? "border-gray-900 bg-gray-900 text-white"
                               : "border-gray-300 bg-white text-gray-900 hover:border-gray-900"
-                            }`}
+                          }`}
                         >
                           {size}
                         </button>
@@ -701,9 +733,7 @@ const ProductDetailsPage = () => {
                   >
                     <Minus className="h-4 w-4" />
                   </button>
-                  <span className="px-6 py-2 border-x border-gray-300 min-w-[60px] text-center">
-                    {quantity}
-                  </span>
+                  <span className="px-6 py-2 border-x border-gray-300 min-w-[60px] text-center">{quantity}</span>
                   <button
                     onClick={() => setQuantity(Math.min(product.quantity, quantity + 1))}
                     disabled={quantity >= product.quantity}
@@ -773,9 +803,7 @@ const ProductDetailsPage = () => {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
-                      <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">
-                        {relatedProduct.title}
-                      </h3>
+                      <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">{relatedProduct.title}</h3>
                       <p className="text-lg font-bold text-gray-900">
                         {relatedProduct.currency}
                         {formatPrice(relatedProduct.price)}
@@ -795,10 +823,7 @@ const ProductDetailsPage = () => {
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">Complete Your Order</h2>
-              <button
-                onClick={() => setShowCheckoutModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={() => setShowCheckoutModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="h-6 w-6" />
               </button>
             </div>
@@ -859,35 +884,17 @@ const ProductDetailsPage = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                  <Input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                  />
+                  <Input type="email" name="email" value={formData.email} onChange={handleInputChange} required />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                  <Input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                  />
+                  <Input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} required />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
-                  <Input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    required
-                  />
+                  <Input type="text" name="address" value={formData.address} onChange={handleInputChange} required />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
