@@ -16,7 +16,7 @@ const JewelryBannerfull = () => {
         }
         const data = await response.json();
         
-        // UPDATED: অ্যারের ইনডেক্স না দেখে সরাসরি Position 4 খুঁজছি
+        // UPDATED: Position 4 খুঁজছি
         const fullWidthBanner = data.find(b => b.position === 4);
 
         if (fullWidthBanner) {
@@ -39,7 +39,7 @@ const JewelryBannerfull = () => {
       </div>
     );
 
-  // 👇 ডাটা না থাকলে কিছুই রিটার্ন করবে না (সেকশন হাইড হয়ে যাবে)
+  // 👇 ডাটা না থাকলে কিছুই রিটার্ন করবে না (সেকশন হাইড হয়ে যাবে)
   if (!bannerData) {
     return null;
   }
@@ -49,7 +49,7 @@ const JewelryBannerfull = () => {
       {/* Banner Image */}
       <img
         src={bannerData.image}
-        alt={bannerData.title}
+        alt={bannerData.title || "Full Width Banner"}
         className="w-full h-auto object-contain"
       />
 
@@ -59,21 +59,33 @@ const JewelryBannerfull = () => {
       {/* Content */}
       <div className="absolute inset-0 flex items-center justify-center md:justify-end text-center md:text-left mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-sm sm:max-w-md md:max-w-xl space-y-3 relative z-10">
-          <span className="text-xs sm:text-sm font-medium tracking-widest text-black">
-            {bannerData.subtitle}
-          </span>
-          <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-black leading-snug">
-            {bannerData.title}
-          </h1>
+          
+          {/* Condition: Show Subtitle only if exists */}
+          {bannerData.subtitle && (
+            <span className="text-xs sm:text-sm font-medium tracking-widest text-black uppercase block">
+              {bannerData.subtitle}
+            </span>
+          )}
 
-          <div className="pt-2">
-            <a
-              href={bannerData.buttonLink}
-              className="text-black underline text-sm sm:text-base font-medium"
-            >
-              Shop Now
-            </a>
-          </div>
+          {/* Condition: Show Title only if exists */}
+          {bannerData.title && (
+            <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-black leading-snug">
+              {bannerData.title}
+            </h1>
+          )}
+
+          {/* Condition: Show Button only if Link AND Text exist */}
+          {bannerData.buttonLink && bannerData.buttonText && (
+            <div className="pt-2">
+              <a
+                href={bannerData.buttonLink}
+                className="text-black underline text-sm sm:text-base font-medium hover:text-gray-700 transition-colors"
+              >
+                {bannerData.buttonText}
+              </a>
+            </div>
+          )}
+
         </div>
       </div>
     </section>

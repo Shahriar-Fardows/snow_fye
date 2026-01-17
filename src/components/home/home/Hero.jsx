@@ -94,13 +94,15 @@ export default function HeroSection() {
           delay: 8000,
           disableOnInteraction: false,
         }}
-        // পরিবর্তন ১: যদি ১টির বেশি স্লাইড থাকে তবেই লুপ হবে
         loop={banners.length > 1}
         onSwiper={setSwiperInstance}
         className="w-full h-full"
       >
         {banners.map((banner, index) => {
           const currentImage = isMobile && banner?.mobileImage ? banner.mobileImage : banner?.image
+          
+          // Check if there are any valid buttons to show (Enabled + Text + Link)
+          const hasValidButtons = banner?.buttons?.some((btn) => btn.enabled && btn.text && btn.link);
 
           return (
             <SwiperSlide key={index}>
@@ -114,37 +116,47 @@ export default function HeroSection() {
                       alt={banner?.heading || "Banner"}
                       className="w-full h-full object-cover"
                     />
-                    {/* <div className="absolute inset-0 bg-black/30" /> */}
                   </div>
 
                   {/* Mobile Content Section */}
                   <div className="flex-1 flex items-center justify-center bg-white px-4 py-8">
                     <div className="text-center max-w-md">
-                      <h1
-                        className="font-bold leading-tight mb-4"
-                        style={{
-                          fontSize: banner?.headingStyle?.mobileSize || "24px",
-                          color: banner?.headingStyle?.color || "#333",
-                          fontWeight: banner?.headingStyle?.fontWeight || "bold",
-                        }}
-                      >
-                        {banner?.heading || ""}
-                      </h1>
-                      <p
-                        className="mb-6"
-                        style={{
-                          fontSize: banner?.descriptionStyle?.mobileSize || "16px",
-                          color: banner?.descriptionStyle?.color || "#666",
-                          fontWeight: banner?.descriptionStyle?.fontWeight || "normal",
-                        }}
-                      >
-                        {banner?.description || ""}
-                      </p>
-                      {banner?.buttons?.some((btn) => btn.enabled) && (
+                      
+                      {/* Conditional Heading */}
+                      {banner?.heading && (
+                        <h1
+                          className="font-bold leading-tight mb-4"
+                          style={{
+                            fontSize: banner?.headingStyle?.mobileSize || "24px",
+                            color: banner?.headingStyle?.color || "#333",
+                            fontWeight: banner?.headingStyle?.fontWeight || "bold",
+                          }}
+                        >
+                          {banner.heading}
+                        </h1>
+                      )}
+
+                      {/* Conditional Description */}
+                      {banner?.description && (
+                        <p
+                          className="mb-6"
+                          style={{
+                            fontSize: banner?.descriptionStyle?.mobileSize || "16px",
+                            color: banner?.descriptionStyle?.color || "#666",
+                            fontWeight: banner?.descriptionStyle?.fontWeight || "normal",
+                          }}
+                        >
+                          {banner.description}
+                        </p>
+                      )}
+
+                      {/* Conditional Buttons Wrapper */}
+                      {hasValidButtons && (
                         <div className="flex flex-col gap-3">
                           {banner.buttons.map(
                             (button, buttonIndex) =>
-                              button.enabled && (
+                              // Only show button if enabled AND has text AND has link
+                              button.enabled && button.text && button.link && (
                                 <Button
                                   key={buttonIndex}
                                   size="lg"
@@ -156,7 +168,7 @@ export default function HeroSection() {
                                     borderRadius: button.mobileStyle?.borderRadius || "6px",
                                     fontSize: button.mobileStyle?.fontSize || "16px",
                                   }}
-                                  onClick={() => button.link && window.open(button.link, "_blank")}
+                                  onClick={() => window.open(button.link, "_blank")}
                                 >
                                   {button.text}
                                 </Button>
@@ -176,38 +188,48 @@ export default function HeroSection() {
                       alt={banner?.heading || "Banner"}
                       className="w-full h-full object-cover"
                     />
-                    {/* <div className="absolute inset-0 bg-black/50" /> */}
                   </div>
 
                   {/* Desktop Content */}
                   <div className="relative z-10 flex items-center h-full">
                     <div className="container mx-auto px-4 lg:px-8">
                       <div className="max-w-2xl text-left text-white">
-                        <h1
-                          className="font-bold leading-tight mb-6"
-                          style={{
-                            fontSize: banner?.headingStyle?.desktopSize || "56px",
-                            color: banner?.headingStyle?.color || "#fff",
-                            fontWeight: banner?.headingStyle?.fontWeight || "bold",
-                          }}
-                        >
-                          {banner?.heading || ""}
-                        </h1>
-                        <p
-                          className="mb-8"
-                          style={{
-                            fontSize: banner?.descriptionStyle?.desktopSize || "20px",
-                            color: banner?.descriptionStyle?.color || "#f1f1f1",
-                            fontWeight: banner?.descriptionStyle?.fontWeight || "normal",
-                          }}
-                        >
-                          {banner?.description || ""}
-                        </p>
-                        {banner?.buttons?.some((btn) => btn.enabled) && (
+                        
+                        {/* Conditional Heading */}
+                        {banner?.heading && (
+                          <h1
+                            className="font-bold leading-tight mb-6"
+                            style={{
+                              fontSize: banner?.headingStyle?.desktopSize || "56px",
+                              color: banner?.headingStyle?.color || "#fff",
+                              fontWeight: banner?.headingStyle?.fontWeight || "bold",
+                            }}
+                          >
+                            {banner.heading}
+                          </h1>
+                        )}
+
+                        {/* Conditional Description */}
+                        {banner?.description && (
+                          <p
+                            className="mb-8"
+                            style={{
+                              fontSize: banner?.descriptionStyle?.desktopSize || "20px",
+                              color: banner?.descriptionStyle?.color || "#f1f1f1",
+                              fontWeight: banner?.descriptionStyle?.fontWeight || "normal",
+                            }}
+                          >
+                            {banner.description}
+                          </p>
+                        )}
+
+                        {/* Conditional Buttons Wrapper */}
+                        {hasValidButtons && (
                           <div className="flex flex-row gap-4 justify-start">
                             {banner.buttons.map(
                               (button, buttonIndex) =>
-                                button.enabled && (
+                                // Only show button if enabled AND has text AND has link
+                                button.enabled && button.text && button.link && (
                                   <Button
                                     key={buttonIndex}
                                     size="lg"
@@ -219,7 +241,7 @@ export default function HeroSection() {
                                       borderRadius: button.desktopStyle?.borderRadius || "8px",
                                       fontSize: button.desktopStyle?.fontSize || "16px",
                                     }}
-                                    onClick={() => button.link && window.open(button.link, "_blank")}
+                                    onClick={() => window.open(button.link, "_blank")}
                                   >
                                     {button.text}
                                   </Button>
@@ -237,7 +259,7 @@ export default function HeroSection() {
         })}
       </Swiper>
 
-      {/* পরিবর্তন ২: বাটনগুলো কন্ডিশনাল রেন্ডারিং করা হয়েছে */}
+      {/* Navigation Buttons (Only if more than 1 banner) */}
       {banners.length > 1 && (
         <>
           <button

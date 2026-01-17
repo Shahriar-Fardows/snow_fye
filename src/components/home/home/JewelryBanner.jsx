@@ -11,7 +11,7 @@ const JewelryBannerSection = () => {
       try {
         const response = await fetch('/api/ads-banner');
         const data = await response.json();
-        setBanners(data); // সব ডাটা লোড করলাম, স্লাইস করার দরকার নেই
+        setBanners(data);
       } catch (error) {
         console.error('Error fetching banners:', error);
       } finally {
@@ -22,7 +22,6 @@ const JewelryBannerSection = () => {
     fetchBanners();
   }, []);
 
-  // পজিশন অনুযায়ী ব্যানার খুঁজে বের করা হচ্ছে
   const banner1 = banners.find(b => b.position === 1); // Large Left
   const banner2 = banners.find(b => b.position === 2); // Top Right
   const banner3 = banners.find(b => b.position === 3); // Bottom Right
@@ -35,7 +34,6 @@ const JewelryBannerSection = () => {
     );
   }
 
-  // যদি ১, ২ বা ৩ কোনো পজিশনের ব্যানারই না থাকে, তাহলে সেকশন হাইড
   if (!banner1 && !banner2 && !banner3) {
     return null;
   }
@@ -51,29 +49,40 @@ const JewelryBannerSection = () => {
               <div className="absolute inset-0">
                 <img 
                   src={banner1.image} 
-                  alt={banner1.title}
+                  alt={banner1.title || "Banner"}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="absolute top-8 right-8 text-black max-w-[43%]">
-                <p className="text-sm font-medium tracking-wider mb-2 uppercase drop-shadow-lg">
-                  {banner1.subtitle}
-                </p>
-                <h2 className="text-4xl font-bold mb-4 leading-tight drop-shadow-lg">
-                  {banner1.title}
-                </h2>
-                <a 
-                  href={banner1.buttonLink}
-                  className="inline-flex items-center gap-2 text-sm font-medium border-b-2 border-black pb-1 hover:gap-3 transition-all drop-shadow-lg"
-                >
-                  SHOP NOW
-                  <ArrowRight size={18} />
-                </a>
+                
+                {/* Condition: Show Subtitle only if exists */}
+                {banner1.subtitle && (
+                  <p className="text-sm font-medium tracking-wider mb-2 uppercase drop-shadow-lg">
+                    {banner1.subtitle}
+                  </p>
+                )}
+
+                {/* Condition: Show Title only if exists */}
+                {banner1.title && (
+                  <h2 className="text-4xl font-bold mb-4 leading-tight drop-shadow-lg">
+                    {banner1.title}
+                  </h2>
+                )}
+                
+                {/* Condition: Show button only if link AND text exist */}
+                {banner1.buttonLink && banner1.buttonText && (
+                  <a 
+                    href={banner1.buttonLink}
+                    className="inline-flex items-center gap-2 text-sm font-medium border-b-2 border-black pb-1 hover:gap-3 transition-all drop-shadow-lg"
+                  >
+                    {banner1.buttonText}
+                    <ArrowRight size={18} />
+                  </a>
+                )}
+
               </div>
             </div>
           ) : (
-             // যদি পজিশন ১ খালি থাকে তবে ফাঁকা ডিভ বা প্লেসহোল্ডার রাখতে পারেন, 
-             // তবে ডিজাইনের স্বার্থে কিছু না রাখাই ভালো, ডানপাশের গ্রিড তখন অটোমেটিক জায়গা নিবে না (MD স্ক্রিনে)
              <div className="hidden md:block"></div> 
           )}
 
@@ -86,28 +95,40 @@ const JewelryBannerSection = () => {
                 <div className="absolute inset-0">
                   <img 
                     src={banner2.image} 
-                    alt={banner2.title}
+                    alt={banner2.title || "Banner"}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="absolute top-6 right-6 text-black max-w-[40%]">
-                  <p className="text-xs font-medium tracking-wider mb-2 uppercase drop-shadow-lg">
-                    {banner2.subtitle}
-                  </p>
-                  <h3 className="text-2xl font-bold mb-3 leading-tight drop-shadow-lg">
-                    {banner2.title}
-                  </h3>
-                  <a 
-                    href={banner2.buttonLink}
-                    className="inline-flex items-center gap-2 text-sm font-medium border-b-2 border-black pb-1 hover:gap-3 transition-all drop-shadow-lg"
-                  >
-                    SHOP NOW
-                    <ArrowRight size={16} />
-                  </a>
+                  
+                  {/* Condition: Show Subtitle only if exists */}
+                  {banner2.subtitle && (
+                    <p className="text-xs font-medium tracking-wider mb-2 uppercase drop-shadow-lg">
+                      {banner2.subtitle}
+                    </p>
+                  )}
+
+                  {/* Condition: Show Title only if exists */}
+                  {banner2.title && (
+                    <h3 className="text-2xl font-bold mb-3 leading-tight drop-shadow-lg">
+                      {banner2.title}
+                    </h3>
+                  )}
+
+                  {/* Condition: Show button only if link AND text exist */}
+                  {banner2.buttonLink && banner2.buttonText && (
+                    <a 
+                        href={banner2.buttonLink}
+                        className="inline-flex items-center gap-2 text-sm font-medium border-b-2 border-black pb-1 hover:gap-3 transition-all drop-shadow-lg"
+                    >
+                        {banner2.buttonText}
+                        <ArrowRight size={16} />
+                    </a>
+                  )}
+
                 </div>
               </div>
             ) : (
-                // পজিশন ২ না থাকলে ফাঁকা জায়গা
                 <div className="h-[285px]"></div>
             )}
 
@@ -117,28 +138,40 @@ const JewelryBannerSection = () => {
                 <div className="absolute inset-0">
                   <img 
                     src={banner3.image} 
-                    alt={banner3.title}
+                    alt={banner3.title || "Banner"}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="absolute top-6 left-6 text-left text-black max-w-[40%]">
-                  <p className="text-xs font-medium tracking-wider mb-2 uppercase drop-shadow-lg">
-                    {banner3.subtitle}
-                  </p>
-                  <h3 className="text-2xl font-bold mb-3 leading-tight drop-shadow-lg">
-                    {banner3.title}
-                  </h3>
-                  <a 
-                    href={banner3.buttonLink}
-                    className="inline-flex items-center gap-2 text-sm font-medium border-b-2 border-black pb-1 hover:gap-3 transition-all drop-shadow-lg"
-                  >
-                    SHOP NOW
-                    <ArrowRight size={16} />
-                  </a>
+                  
+                  {/* Condition: Show Subtitle only if exists */}
+                  {banner3.subtitle && (
+                    <p className="text-xs font-medium tracking-wider mb-2 uppercase drop-shadow-lg">
+                      {banner3.subtitle}
+                    </p>
+                  )}
+                  
+                  {/* Condition: Show Title only if exists */}
+                  {banner3.title && (
+                    <h3 className="text-2xl font-bold mb-3 leading-tight drop-shadow-lg">
+                      {banner3.title}
+                    </h3>
+                  )}
+
+                  {/* Condition: Show button only if link AND text exist */}
+                  {banner3.buttonLink && banner3.buttonText && (
+                    <a 
+                        href={banner3.buttonLink}
+                        className="inline-flex items-center gap-2 text-sm font-medium border-b-2 border-black pb-1 hover:gap-3 transition-all drop-shadow-lg"
+                    >
+                        {banner3.buttonText}
+                        <ArrowRight size={16} />
+                    </a>
+                  )}
+                  
                 </div>
               </div>
             ) : (
-                 // পজিশন ৩ না থাকলে ফাঁকা জায়গা
                  <div className="h-[285px]"></div>
             )}
           </div>

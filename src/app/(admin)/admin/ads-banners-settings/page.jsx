@@ -4,7 +4,7 @@ import { Edit, ImageIcon, Plus, Save, Trash2, Upload, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useCloudinary } from '../../../../hooks/useCloudinary';
 
-// Simple Alert Component (Same as before)
+// Simple Alert Component
 const SimpleAlert = ({ type, title, message, onConfirm, onCancel, showCancel }) => {
   const getIcon = () => {
     switch(type) {
@@ -65,8 +65,9 @@ const BannerDashboard = () => {
     title: '',
     subtitle: '',
     image: '',
+    buttonText: '', // UPDATED: Added buttonText field
     buttonLink: '',
-    position: '1' // UPDATED: Added position field
+    position: '1'
   });
 
   const showAlert = (type, title, message, callback, showCancel = false) => {
@@ -81,7 +82,6 @@ const BannerDashboard = () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/ads-banner');
-      // UPDATED: Sort banners by position (ascending)
       const sortedBanners = response.data.sort((a, b) => (a.position || 0) - (b.position || 0));
       setBanners(sortedBanners);
     } catch (error) {
@@ -114,7 +114,7 @@ const BannerDashboard = () => {
       return;
     }
     
-    // UPDATED: Find the first available position automatically
+    // Find next available position
     const takenPositions = banners.map(b => parseInt(b.position));
     let nextPosition = 1;
     for(let i = 1; i <= 4; i++) {
@@ -126,8 +126,8 @@ const BannerDashboard = () => {
 
     setEditMode(false);
     setCurrentBanner(null);
-    // UPDATED: Initialize with the calculated next position
-    setFormData({ title: '', subtitle: '', image: '', buttonLink: '', position: nextPosition.toString() });
+    // UPDATED: Reset buttonText as well
+    setFormData({ title: '', subtitle: '', image: '', buttonText: '', buttonLink: '', position: nextPosition.toString() });
     setImagePreview('');
     setSelectedFile(null);
     setShowModal(true);
@@ -137,11 +137,12 @@ const BannerDashboard = () => {
     setEditMode(true);
     setCurrentBanner(banner);
     setFormData({
-      title: banner.title,
-      subtitle: banner.subtitle,
+      title: banner.title || '',
+      subtitle: banner.subtitle || '',
       image: banner.image,
-      buttonLink: banner.buttonLink,
-      position: banner.position ? banner.position.toString() : '1' // UPDATED: Load existing position
+      buttonText: banner.buttonText || '', // UPDATED: Load existing buttonText
+      buttonLink: banner.buttonLink || '',
+      position: banner.position ? banner.position.toString() : '1'
     });
     setImagePreview(banner.image);
     setSelectedFile(null);
@@ -151,9 +152,11 @@ const BannerDashboard = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.subtitle || !formData.buttonLink) {
-      showAlert('warning', 'Missing Fields', 'Please fill all required fields');
-      return;
+    // UPDATED: Validation removed for Title, Subtitle, Button Link/Text.
+    // Only checking if image is present (either existing or new upload) because a banner needs an image.
+    if (!formData.image && !selectedFile) {
+        showAlert('warning', 'Missing Image', 'Please upload a banner image');
+        return;
     }
 
     let imageUrl = formData.image;
@@ -173,18 +176,14 @@ const BannerDashboard = () => {
       }
     }
 
-    if (!imageUrl) {
-      showAlert('warning', 'No Image', 'Please upload an image');
-      return;
-    }
-
     try {
       const bannerData = {
         title: formData.title,
         subtitle: formData.subtitle,
         image: imageUrl,
+        buttonText: formData.buttonText, // UPDATED: Send buttonText
         buttonLink: formData.buttonLink,
-        position: parseInt(formData.position) // UPDATED: Send position to backend
+        position: parseInt(formData.position)
       };
 
       if (editMode) {
@@ -283,7 +282,6 @@ const BannerDashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {banners.map((banner) => (
               <div key={banner._id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow relative">
-                {/* UPDATED: Show Position Badge */}
                 <div className="absolute top-2 left-2 z-10 bg-black/70 text-white px-2 py-1 rounded text-xs font-bold shadow-sm border border-white/20">
                   Banner #{banner.position || '?'}
                 </div>
@@ -298,16 +296,19 @@ const BannerDashboard = () => {
                   )}
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900">{banner.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{banner.subtitle}</p>
-                  <a
-                    href={banner.buttonLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:text-blue-700 mt-2 inline-block break-all"
-                  >
-                    {banner.buttonLink}
-                  </a>
+                  <h3 className="text-lg font-semibold text-gray-900">{banner.title || <span className="text-gray-400 italic">No Title</span>}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{banner.subtitle || <span className="text-gray-400 italic">No Subtitle</span>}</p>
+                  
+                  {/* Display Button Info if available */}
+                  {(banner.buttonLink || banner.buttonText) ? (
+                     <div className="mt-2 text-xs text-gray-500 flex flex-col gap-1">
+                        {banner.buttonText && <span className="font-medium text-black">Btn: {banner.buttonText}</span>}
+                        {banner.buttonLink && <a href={banner.buttonLink} target="_blank" className="text-blue-600 hover:underline truncate">{banner.buttonLink}</a>}
+                     </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 mt-2 italic">No Button Configured</p>
+                  )}
+
                   <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
                     <button
                       onClick={() => openEditModal(banner)}
@@ -355,7 +356,6 @@ const BannerDashboard = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   
-                  {/* UPDATED: Added Position Selector Dropdown */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Banner Position <span className="text-red-500">*</span>
@@ -375,7 +375,7 @@ const BannerDashboard = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Title <span className="text-red-500">*</span>
+                      Title <span className="text-xs text-gray-400 font-normal">(Optional)</span>
                     </label>
                     <input
                       type="text"
@@ -388,7 +388,7 @@ const BannerDashboard = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Subtitle <span className="text-red-500">*</span>
+                      Subtitle <span className="text-xs text-gray-400 font-normal">(Optional)</span>
                     </label>
                     <input
                       type="text"
@@ -399,17 +399,32 @@ const BannerDashboard = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Button Link <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.buttonLink}
-                      onChange={(e) => setFormData({ ...formData, buttonLink: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      placeholder="https://example.com"
-                    />
+                  {/* UPDATED: Added Button Text Input */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Button Text <span className="text-xs text-gray-400 font-normal">(Optional)</span>
+                        </label>
+                        <input
+                        type="text"
+                        value={formData.buttonText}
+                        onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        placeholder="e.g., Shop Now"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Button Link <span className="text-xs text-gray-400 font-normal">(Optional)</span>
+                        </label>
+                        <input
+                        type="text"
+                        value={formData.buttonLink}
+                        onChange={(e) => setFormData({ ...formData, buttonLink: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        placeholder="https://example.com"
+                        />
+                    </div>
                   </div>
 
                   <div>
