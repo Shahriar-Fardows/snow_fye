@@ -116,6 +116,13 @@ export default function EcommerceSidebar() {
       allowedRoles: ["admin", "moderator"]
     },
     {
+      id: "reviews-settings",
+      label: "Reviews Settings",
+      icon: Settings,
+      href: "/admin/reviews-settings",
+      allowedRoles: ["admin", "moderator"]
+    },
+    {
       id: "blog-settings",
       label: "Blog Settings",
       icon: FileText,

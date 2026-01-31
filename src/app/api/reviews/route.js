@@ -97,6 +97,34 @@ export async function POST(request) {
   }
 }
 
+
+// ✅ PUT: Update Review Visibility or Content
+export async function PUT(request) {
+  try {
+    const data = await request.json();
+    const { id, isVisible } = data; // আমরা শুধু isVisible স্ট্যাটাস আপডেট করব
+
+    if (!id) {
+      return new Response(JSON.stringify({ message: "Review ID required" }), { status: 400 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db("snowfye");
+
+    const result = await db.collection("reviews").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isVisible: isVisible } } // true অথবা false সেট হবে
+    );
+
+    if (result.matchedCount === 0) {
+      return new Response(JSON.stringify({ message: "Review not found" }), { status: 404 });
+    }
+
+    return new Response(JSON.stringify({ message: "Review updated successfully" }), { status: 200 });
+  } catch (error) {
+    return new Response(JSON.stringify({ message: "Failed to update", error: error.message }), { status: 500 });
+  }
+}
 // DELETE: Delete review
 export async function DELETE(request) {
   try {

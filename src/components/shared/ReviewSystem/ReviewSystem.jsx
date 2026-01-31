@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import useAuthContext from "@/hooks/useAuthContext"
-import { useCloudinary } from "@/hooks/useCloudinary" // ✅ Cloudinary Hook Import
+import { useCloudinary } from "@/hooks/useCloudinary" 
 import axios from "axios"
 import { ChevronDown, ChevronUp, Flag, ImageIcon, MessageCircle, Reply, Star, ThumbsUp, Upload, X } from "lucide-react"
 import Link from "next/link"
@@ -26,7 +26,7 @@ const ReviewSystem = ({ productId, productImage }) => {
   const [submittingComments, setSubmittingComments] = useState({})
 
   const { user } = useAuthContext()
-  const { uploadImage } = useCloudinary() // ✅ Use Cloudinary Hook
+  const { uploadImage } = useCloudinary() 
 
   useEffect(() => {
     if (productId) {
@@ -50,7 +50,12 @@ const ReviewSystem = ({ productId, productImage }) => {
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
-        setReviews(data)
+        
+        // ✅ FILTERING HIDDEN REVIEWS HERE
+        // Only show reviews where isVisible is NOT false (i.e., true or undefined)
+        const visibleReviews = data.filter(review => review.isVisible !== false)
+        
+        setReviews(visibleReviews)
       }
     } catch (error) {
       console.error("Error fetching reviews:", error)
@@ -59,6 +64,8 @@ const ReviewSystem = ({ productId, productImage }) => {
     }
   }
 
+  // ... (বাকি সব ফাংশন যেমন handleImageSelect, handleSubmitReview, handleSubmitComment, toggleComments, calculateAverageRating, getRatingDistribution, formatDate, StarRating আগের মতোই থাকবে) ...
+  
   const handleImageSelect = (event) => {
     const files = Array.from(event.target.files)
     if (files.length + selectedImages.length > 5) {
@@ -128,14 +135,12 @@ const ReviewSystem = ({ productId, productImage }) => {
 
       let uploadedImageUrls = []
       
-      // ✅ Updated Image Upload Logic using Cloudinary
       if (selectedImages.length > 0) {
         setUploadingImages(true)
         try {
           const uploadPromises = selectedImages.map((file) => uploadImage(file))
           const results = await Promise.all(uploadPromises)
           
-          // Filter successful uploads and get secure_url
           uploadedImageUrls = results
             .filter((res) => res && res.secure_url)
             .map((res) => res.secure_url)
@@ -160,10 +165,11 @@ const ReviewSystem = ({ productId, productImage }) => {
         productId: productId,
         userName: user.displayName || user.email?.split("@")[0] || "Anonymous",
         text: reviewText,
-        rating: Number(reviewRating), // Ensure number
+        rating: Number(reviewRating), 
         productImage: productImage || "",
         userEmail: user.email,
         images: uploadedImageUrls,
+        isVisible: true // Default visible
       })
 
       if (response.status === 200 || response.status === 201) {
@@ -195,7 +201,6 @@ const ReviewSystem = ({ productId, productImage }) => {
   }
 
   const handleSubmitComment = async (reviewId) => {
-    // ... (Comment logic remains same)
     if (!user) {
         // ... Login check
         return
@@ -206,8 +211,8 @@ const ReviewSystem = ({ productId, productImage }) => {
     try {
       setSubmittingComments((prev) => ({ ...prev, [reviewId]: true }))
 
-      const response = await axios.post("/api/reviews", { // Note: Usually POST to /api/reviews handles both based on your API logic
-        reviewId: reviewId, // Sending reviewId signals it's a comment
+      const response = await axios.post("/api/reviews", { 
+        reviewId: reviewId, 
         userName: user.displayName || user.email?.split("@")[0] || "Anonymous",
         text: commentText,
         userEmail: user.email,
@@ -230,7 +235,6 @@ const ReviewSystem = ({ productId, productImage }) => {
     }
   }
 
-  // ... (Rest of the helper functions: toggleComments, calculateAverageRating, etc. remain the same)
   const toggleComments = (reviewId) => {
     setExpandedComments((prev) => ({ ...prev, [reviewId]: !prev[reviewId] }))
   }
@@ -278,7 +282,8 @@ const ReviewSystem = ({ productId, productImage }) => {
 
   return (
     <div className="space-y-6">
-      {/* ... (UI JSX remains exactly the same as your code, just ensuring StarRating etc are used correctly) */}
+      
+      {/* Average Rating & Distribution Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardContent className="p-6 text-center flex flex-col items-center">
@@ -305,6 +310,7 @@ const ReviewSystem = ({ productId, productImage }) => {
         </Card>
       </div>
 
+      {/* Review Submission Form */}
       <Card>
         <CardContent className="p-6">
           <h3 className="text-xl font-semibold text-gray-900 mb-4">Write a Review</h3>
@@ -359,7 +365,7 @@ const ReviewSystem = ({ productId, productImage }) => {
         </CardContent>
       </Card>
 
-      {/* Review List */}
+      {/* Reviews List */}
       <div className="space-y-6">
         {loading ? (
           <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
@@ -389,7 +395,7 @@ const ReviewSystem = ({ productId, productImage }) => {
                             </div>
                         </div>
                     )}
-                    {/* ... Comments Section UI ... */}
+                    {/* ... Comments Section ... */}
                     <div className="mt-4 border-t border-gray-100 pt-4">
                         <Button variant="ghost" size="sm" onClick={() => toggleComments(review._id)}>
                             <Reply className="h-4 w-4 mr-1" /> {review.comments?.length || 0} Comments {expandedComments[review._id] ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
