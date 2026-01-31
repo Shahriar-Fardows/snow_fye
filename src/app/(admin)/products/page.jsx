@@ -87,29 +87,6 @@ const ProductsTable = () => {
         }));
     };
 
-    const handleVariantChange = (variantIndex, field, value) => {
-        setEditFormData(prev => ({
-            ...prev,
-            variants: prev.variants.map((variant, index) =>
-                index === variantIndex ? { ...variant, [field]: value } : variant
-            )
-        }));
-    };
-
-    const handleSizeChange = (variantIndex, sizeIndex, value) => {
-        setEditFormData(prev => ({
-            ...prev,
-            variants: prev.variants.map((variant, index) =>
-                index === variantIndex
-                    ? {
-                        ...variant,
-                        sizes: variant.sizes.map((size, idx) => idx === sizeIndex ? value : size)
-                    }
-                    : variant
-            )
-        }));
-    };
-
     const handleUpdate = async () => {
         try {
             const updatedData = {
@@ -327,10 +304,10 @@ const ProductsTable = () => {
                                         {/* Quantity */}
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.quantity > 10
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : product.quantity > 0
-                                                        ? 'bg-yellow-100 text-yellow-800'
-                                                        : 'bg-red-100 text-red-800'
+                                                ? 'bg-green-100 text-green-800'
+                                                : product.quantity > 0
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : 'bg-red-100 text-red-800'
                                                 }`}>
                                                 {product.quantity} units
                                             </span>
@@ -442,7 +419,7 @@ const ProductsTable = () => {
                                         {isEditing ? (
                                             <input
                                                 type="text"
-                                                value={editFormData.title}
+                                                value={editFormData.title || ''}
                                                 onChange={(e) => handleInputChange('title', e.target.value)}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
@@ -456,7 +433,7 @@ const ProductsTable = () => {
                                         <h3 className="font-semibold text-gray-800 mb-2">Description</h3>
                                         {isEditing ? (
                                             <textarea
-                                                value={editFormData.description}
+                                                value={editFormData.description || ''}
                                                 onChange={(e) => handleInputChange('description', e.target.value)}
                                                 rows={3}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -473,7 +450,7 @@ const ProductsTable = () => {
                                             {isEditing ? (
                                                 <div className="flex items-center gap-2">
                                                     <select
-                                                        value={editFormData.currency}
+                                                        value={editFormData.currency || '$'}
                                                         onChange={(e) => handleInputChange('currency', e.target.value)}
                                                         className="px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     >
@@ -491,7 +468,7 @@ const ProductsTable = () => {
                                                     <input
                                                         type="number"
                                                         value={editFormData.price}
-                                                        onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
+                                                        onChange={(e) => handleInputChange('price', e.target.value === '' ? '' : parseFloat(e.target.value))}
                                                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     />
                                                 </div>
@@ -502,14 +479,14 @@ const ProductsTable = () => {
                                             )}
                                         </div>
 
-                                        {/* Quantity */}
+                                        {/* Quantity (Fix for NaN Error) */}
                                         <div>
                                             <h4 className="font-semibold text-gray-800 mb-1">Quantity</h4>
                                             {isEditing ? (
                                                 <input
                                                     type="number"
                                                     value={editFormData.quantity}
-                                                    onChange={(e) => handleInputChange('quantity', parseInt(e.target.value))}
+                                                    onChange={(e) => handleInputChange('quantity', e.target.value === '' ? '' : parseInt(e.target.value))}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 />
                                             ) : (
@@ -526,7 +503,7 @@ const ProductsTable = () => {
                                                 <input
                                                     type="number"
                                                     value={editFormData.compareAtPrice || ''}
-                                                    onChange={(e) => handleInputChange('compareAtPrice', parseFloat(e.target.value) || 0)}
+                                                    onChange={(e) => handleInputChange('compareAtPrice', e.target.value === '' ? '' : parseFloat(e.target.value))}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     placeholder="Enter compare price"
                                                 />
@@ -544,7 +521,7 @@ const ProductsTable = () => {
                                         {isEditing ? (
                                             <input
                                                 type="text"
-                                                value={editFormData.profit}
+                                                value={editFormData.profit || ''}
                                                 onChange={(e) => handleInputChange('profit', e.target.value)}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
@@ -592,7 +569,7 @@ const ProductsTable = () => {
                                             <img
                                                 src={variant.image}
                                                 alt="Variant"
-                                                className="w-full  object-cover rounded border"
+                                                className="w-full object-cover rounded border"
                                             />
                                         </div>
                                     ))}
@@ -600,7 +577,7 @@ const ProductsTable = () => {
                             </div>
                         </div>
 
-                        
+
                     </div>
                 </div>
             )}

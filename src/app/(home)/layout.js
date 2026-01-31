@@ -22,16 +22,16 @@ const merriweather = Merriweather({
 
 // ✅ Default metadata (Next.js 13+ feature)
 export const metadata = {
-  title: "snowfye | Your All-in-One E-commerce Solution",
+  title: "Snowfye | The Premium Lifestyle Shopping Destination of Bangladesh",
   description:
-    "snowfye is a complete e-commerce platform template where you can sell anything online. Fast, secure, and SEO-optimized.",
+    "Welcome to Snowfye – where trust meets trend. We deliver a curated collection of premium lifestyle essentials to every corner of Bangladesh. 100% Authentic. Fast. Reliable. ",
   keywords:
     "snowfye, e-commerce, online store, e-commerce template, shop, buy, sell",
   authors: [{ name: "snowfye" }],
   openGraph: {
-    title: "snowfye | Your All-in-One E-commerce Solution",
+    title: "Snowfye | The Premium Lifestyle Shopping Destination of Bangladesh",
     description:
-      "Launch your online store with snowfye. Sell anything, anywhere with our complete e-commerce solution.",
+      "Welcome to Snowfye – where trust meets trend. We deliver a curated collection of premium lifestyle essentials to every corner of Bangladesh. 100% Authentic. Fast. Reliable. ",
     url: "https://snowfye.com",
     siteName: "snowfye",
     type: "website",

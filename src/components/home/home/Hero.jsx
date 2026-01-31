@@ -101,8 +101,11 @@ export default function HeroSection() {
         {banners.map((banner, index) => {
           const currentImage = isMobile && banner?.mobileImage ? banner.mobileImage : banner?.image
           
-          // Check if there are any valid buttons to show (Enabled + Text + Link)
+          // Check if there are any valid buttons
           const hasValidButtons = banner?.buttons?.some((btn) => btn.enabled && btn.text && btn.link);
+          
+          // 🔥 Check if there is ANY content to show (Heading, Description, or Buttons)
+          const hasContent = banner?.heading || banner?.description || hasValidButtons;
 
           return (
             <SwiperSlide key={index}>
@@ -110,7 +113,8 @@ export default function HeroSection() {
                 // --- Mobile Part ---
                 <div className="flex flex-col h-full">
                   {/* Mobile Image Section */}
-                  <div className="relative overflow-hidden h-1/2">
+                  {/* 👇 Logic: If text exists, use h-1/2 (50%), otherwise use h-full (100%) */}
+                  <div className={`relative overflow-hidden ${hasContent ? "h-1/2" : "h-full"}`}>
                     <img
                       src={currentImage || "/placeholder.svg"}
                       alt={banner?.heading || "Banner"}
@@ -119,65 +123,68 @@ export default function HeroSection() {
                   </div>
 
                   {/* Mobile Content Section */}
-                  <div className="flex-1 flex items-center justify-center bg-white px-4 py-8">
-                    <div className="text-center max-w-md">
-                      
-                      {/* Conditional Heading */}
-                      {banner?.heading && (
-                        <h1
-                          className="font-bold leading-tight mb-4"
-                          style={{
-                            fontSize: banner?.headingStyle?.mobileSize || "24px",
-                            color: banner?.headingStyle?.color || "#333",
-                            fontWeight: banner?.headingStyle?.fontWeight || "bold",
-                          }}
-                        >
-                          {banner.heading}
-                        </h1>
-                      )}
+                  {/* 👇 Logic: Only render this div if content exists */}
+                  {hasContent && (
+                    <div className="flex-1 flex items-center justify-center bg-white px-4 py-8">
+                      <div className="text-center max-w-md">
+                        
+                        {/* Conditional Heading */}
+                        {banner?.heading && (
+                          <h1
+                            className="font-bold leading-tight mb-4"
+                            style={{
+                              fontSize: banner?.headingStyle?.mobileSize || "24px",
+                              color: banner?.headingStyle?.color || "#333",
+                              fontWeight: banner?.headingStyle?.fontWeight || "bold",
+                            }}
+                          >
+                            {banner.heading}
+                          </h1>
+                        )}
 
-                      {/* Conditional Description */}
-                      {banner?.description && (
-                        <p
-                          className="mb-6"
-                          style={{
-                            fontSize: banner?.descriptionStyle?.mobileSize || "16px",
-                            color: banner?.descriptionStyle?.color || "#666",
-                            fontWeight: banner?.descriptionStyle?.fontWeight || "normal",
-                          }}
-                        >
-                          {banner.description}
-                        </p>
-                      )}
+                        {/* Conditional Description */}
+                        {banner?.description && (
+                          <p
+                            className="mb-6"
+                            style={{
+                              fontSize: banner?.descriptionStyle?.mobileSize || "16px",
+                              color: banner?.descriptionStyle?.color || "#666",
+                              fontWeight: banner?.descriptionStyle?.fontWeight || "normal",
+                            }}
+                          >
+                            {banner.description}
+                          </p>
+                        )}
 
-                      {/* Conditional Buttons Wrapper */}
-                      {hasValidButtons && (
-                        <div className="flex flex-col gap-3">
-                          {banner.buttons.map(
-                            (button, buttonIndex) =>
-                              // Only show button if enabled AND has text AND has link
-                              button.enabled && button.text && button.link && (
-                                <Button
-                                  key={buttonIndex}
-                                  size="lg"
-                                  className="w-full py-3 shadow-lg hover:opacity-90 transition-all duration-300 hover:scale-105"
-                                  style={{
-                                    backgroundColor: button.mobileStyle?.bgColor || "#ff6c2f",
-                                    color: button.mobileStyle?.textColor || "#fff",
-                                    borderColor: button.mobileStyle?.borderColor || "#ff6c2f",
-                                    borderRadius: button.mobileStyle?.borderRadius || "6px",
-                                    fontSize: button.mobileStyle?.fontSize || "16px",
-                                  }}
-                                  onClick={() => window.open(button.link, "_blank")}
-                                >
-                                  {button.text}
-                                </Button>
-                              ),
-                          )}
-                        </div>
-                      )}
+                        {/* Conditional Buttons Wrapper */}
+                        {hasValidButtons && (
+                          <div className="flex flex-col gap-3">
+                            {banner.buttons.map(
+                              (button, buttonIndex) =>
+                                // Only show button if enabled AND has text AND has link
+                                button.enabled && button.text && button.link && (
+                                  <Button
+                                    key={buttonIndex}
+                                    size="lg"
+                                    className="w-full py-3 shadow-lg hover:opacity-90 transition-all duration-300 hover:scale-105"
+                                    style={{
+                                      backgroundColor: button.mobileStyle?.bgColor || "#ff6c2f",
+                                      color: button.mobileStyle?.textColor || "#fff",
+                                      borderColor: button.mobileStyle?.borderColor || "#ff6c2f",
+                                      borderRadius: button.mobileStyle?.borderRadius || "6px",
+                                      fontSize: button.mobileStyle?.fontSize || "16px",
+                                    }}
+                                    onClick={() => window.open(button.link, "_blank")}
+                                  >
+                                    {button.text}
+                                  </Button>
+                                ),
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ) : (
                 <>

@@ -26,6 +26,7 @@ import { Label } from "../../../../components/ui/label"
 import { Switch } from "../../../../components/ui/switch"
 import { Textarea } from "../../../../components/ui/textarea"
 import { useCloudinary } from "../../../../hooks/useCloudinary"
+import FeaturesAdmin from "@/components/admin/FeaturesAdmin/FeaturesAdmin"
 
 const GeneralSettingsForm = () => {
   const { uploadImage, deleteImage, uploading, imageUrl, setImageUrl } = useCloudinary()
@@ -392,6 +393,7 @@ const GeneralSettingsForm = () => {
           </div>
         )}
       </div>
+      <FeaturesAdmin/>
       <SiteInfoPage />
     </div>
   )
