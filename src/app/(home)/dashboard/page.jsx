@@ -402,11 +402,17 @@ const Dashboard = () => {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => viewOrderDetails(order)}
+                                  onClick={() => {
+                                    if (order.items && order.items.length > 0) {
+                                      setReviewingProduct(order.items[0]);
+                                    } else {
+                                      viewOrderDetails(order);
+                                    }
+                                  }}
                                   className="bg-transparent text-blue-600 hover:bg-blue-50 hover:border-blue-300 text-xs sm:text-sm flex-1 sm:flex-none"
                                 >
                                   <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                                  Review
+                                  Write a Review
                                 </Button>
                               )}
                               {canCancelOrder(order.orderStatus) && order.orderStatus?.toLowerCase() === "processing" ? (
