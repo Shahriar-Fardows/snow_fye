@@ -200,11 +200,12 @@ const ReviewSystem = ({ productId, productImage }) => {
       }
     } catch (error) {
       console.error("Error submitting review:", error)
+      const errorMessage = error.response?.data?.message || "Failed to submit review. Please try again."
       Swal.fire({
         title: "Error!",
-        text: "Failed to submit review. Please try again.",
+        text: errorMessage,
         icon: "error",
-        timer: 2000,
+        timer: 3000,
         showConfirmButton: false,
       })
     } finally {

@@ -80,14 +80,15 @@ export async function POST(request) {
         return new Response(JSON.stringify({ message: "Reviews are currently disabled" }), { status: 403 });
       }
 
-      // 🛑 Verify Purchase
+      // 🛑 Verify Purchase (must be delivered or completed)
       const hasPurchased = await db.collection("orders").findOne({
-        userEmail: data.userEmail,
-        "items.productId": data.productId
+        userEmail: { $regex: new RegExp(`^${data.userEmail}$`, "i") },
+        "items.productId": data.productId,
+        orderStatus: { $regex: /^(delivered|completed)$/i }
       });
 
       if (!hasPurchased) {
-        return new Response(JSON.stringify({ message: "You can only review products you have purchased" }), { status: 403 });
+        return new Response(JSON.stringify({ message: "You can only review products that have been delivered to you." }), { status: 403 });
       }
 
       const review = {

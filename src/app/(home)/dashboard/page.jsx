@@ -1,5 +1,6 @@
 "use client"
 import PrivateRoute from "@/auth/private/PrivateRoute"
+import ReviewSystem from "@/components/shared/ReviewSystem/ReviewSystem"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,8 @@ import {
     Mail,
     MapPin,
     Package,
+    Phone,
+    Star,
     Truck,
     User,
     X,
