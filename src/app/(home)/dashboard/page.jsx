@@ -7,19 +7,19 @@ import { Card, CardContent } from "@/components/ui/card"
 import useAuthContext from "@/hooks/useAuthContext"
 import axios from "axios"
 import {
-  Calendar,
-  CheckCircle,
-  Clock,
-  DollarSign,
-  Eye,
-  LogOut,
-  Mail,
-  MapPin,
-  Package,
-  Truck,
-  User,
-  X,
-  XCircle,
+    Calendar,
+    CheckCircle,
+    Clock,
+    DollarSign,
+    Eye,
+    LogOut,
+    Mail,
+    MapPin,
+    Package,
+    Truck,
+    User,
+    X,
+    XCircle
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -30,6 +30,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
+  const [reviewingProduct, setReviewingProduct] = useState(null)
   const { user, LogOutUser } = useAuthContext()
   const router = useRouter()
 
@@ -207,7 +208,6 @@ const Dashboard = () => {
 
   const canCancelOrder = (status) => {
     return (
-      status?.toLowerCase() !== "processing" &&
       status?.toLowerCase() !== "shipped" &&
       status?.toLowerCase() !== "delivered" &&
       status?.toLowerCase() !== "cancelled"
@@ -395,7 +395,28 @@ const Dashboard = () => {
                                 <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                 View
                               </Button>
-                              {canCancelOrder(order.orderStatus) && (
+                              {(order.orderStatus?.toLowerCase() === "delivered" || order.orderStatus?.toLowerCase() === "completed") && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => viewOrderDetails(order)}
+                                  className="bg-transparent text-blue-600 hover:bg-blue-50 hover:border-blue-300 text-xs sm:text-sm flex-1 sm:flex-none"
+                                >
+                                  <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                  Review
+                                </Button>
+                              )}
+                              {canCancelOrder(order.orderStatus) && order.orderStatus?.toLowerCase() === "processing" ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => cancelOrder(order._id, order.orderStatus)}
+                                  className="bg-transparent text-gray-500 hover:bg-gray-50 text-xs sm:text-sm flex-1 sm:flex-none"
+                                >
+                                  <Phone className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                  Call to Cancel
+                                </Button>
+                              ) : canCancelOrder(order.orderStatus) ? (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -404,7 +425,7 @@ const Dashboard = () => {
                                 >
                                   Cancel
                                 </Button>
-                              )}
+                              ) : null}
                             </div>
                           </div>
 
@@ -512,6 +533,22 @@ const Dashboard = () => {
                               <p>Quantity: {item.quantity}</p>
                               <p className="font-semibold">৳{item.price * item.quantity}</p>
                             </div>
+                            {(selectedOrder.orderStatus?.toLowerCase() === "delivered" || selectedOrder.orderStatus?.toLowerCase() === "completed") && (
+                              <div className="mt-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setShowOrderDetails(false);
+                                    setReviewingProduct(item);
+                                  }}
+                                  className="bg-white text-blue-600 hover:bg-blue-50 hover:border-blue-300 text-xs sm:text-sm h-8"
+                                >
+                                  <Star className="h-3 w-3 mr-1" />
+                                  Write Review
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -584,6 +621,40 @@ const Dashboard = () => {
                     </Button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Review Modal */}
+        {reviewingProduct && (
+          <div className="fixed inset-0 bg-[#00000094] bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col my-4">
+              <div className="p-4 sm:p-6 border-b flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                    <img
+                      src={reviewingProduct.image || "/placeholder.svg"}
+                      alt={reviewingProduct.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 line-clamp-1">
+                      Review: {reviewingProduct.title}
+                    </h2>
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setReviewingProduct(null)} className="flex-shrink-0">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="p-4 sm:p-6 overflow-y-auto flex-1">
+                <ReviewSystem 
+                  productId={reviewingProduct.productId} 
+                  productImage={reviewingProduct.image} 
+                />
               </div>
             </div>
           </div>
