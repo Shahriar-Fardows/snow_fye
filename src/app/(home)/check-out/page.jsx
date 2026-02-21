@@ -71,10 +71,12 @@ const CheckoutPage = () => {
         event: "begin_checkout",
         ecommerce: {
           currency: "BDT",
+          coupon: appliedCoupon?.couponCode || "",
           value: subtotal,
           items: cartItems.map((item, index) => ({
             item_id: item._id,
             item_name: item.title,
+            item_category: item.category || "",
             price: typeof item.price === "string" ? Number.parseInt(item.price) : item.price,
             quantity: item.quantity,
             item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim(),
@@ -138,11 +140,13 @@ const CheckoutPage = () => {
           event: "add_shipping_info",
           ecommerce: {
             currency: "BDT",
+            coupon: appliedCoupon?.couponCode || "",
             value: subtotal + finalCharge - couponDiscount,
             shipping_tier: area.area,
             items: cartItems.map((item) => ({
               item_id: item._id,
               item_name: item.title,
+              item_category: item.category || "",
               price: typeof item.price === "string" ? Number.parseInt(item.price) : item.price,
               quantity: item.quantity,
               item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim()
@@ -354,10 +358,11 @@ const CheckoutPage = () => {
               tax: 0,
               shipping: finalDeliveryCharge,
               currency: "BDT",
-              coupon: appliedCoupon?.couponCode || null,
+              coupon: appliedCoupon?.couponCode || "",
               items: cartItems.map((item) => ({
                 item_id: item._id,
                 item_name: item.title,
+                item_category: item.category || "",
                 price: typeof item.price === "string" ? Number.parseInt(item.price) : item.price,
                 quantity: item.quantity,
                 item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim()

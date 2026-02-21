@@ -30,7 +30,12 @@ export async function POST(req) {
     const client = await clientPromise;
     const db = client.db("snowfye");
 
-    const { logo, socials, announcements, announcementsStatus } = await req.json();
+    const { 
+      logo, socials, announcements, announcementsStatus, 
+      reviewsEnabled, whatsappLink, messengerPageId, 
+      tawkToPropertyId, tawkToWidgetId,
+      whatsappEnabled, messengerEnabled, tawkToEnabled
+    } = await req.json();
 
     // Check old settings
     const oldSettings = await db.collection("general_settings").findOne({});
@@ -48,6 +53,14 @@ export async function POST(req) {
           socials,
           announcements,
           announcementsStatus,
+          reviewsEnabled: reviewsEnabled ?? true,
+          whatsappLink: whatsappLink || "",
+          messengerPageId: messengerPageId || "",
+          tawkToPropertyId: tawkToPropertyId || "",
+          tawkToWidgetId: tawkToWidgetId || "",
+          whatsappEnabled: whatsappEnabled ?? true,
+          messengerEnabled: messengerEnabled ?? true,
+          tawkToEnabled: tawkToEnabled ?? true,
         },
       },
       { upsert: true }

@@ -4,22 +4,22 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import useAuthContext from "@/hooks/useAuthContext"
 import {
-  Bell,
-  ChevronDown,
-  CreditCard,
-  FileText,
-  Home,
-  Menu,
-  Package,
-  Percent,
-  Plus,
-  Settings,
-  ShoppingCart,
-  User,
-  X
+    Bell,
+    ChevronDown,
+    CreditCard,
+    FileText,
+    Home,
+    Menu,
+    Package,
+    Percent,
+    Plus,
+    Settings,
+    ShoppingCart,
+    User,
+    X
 } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 
 
 export default function EcommerceSidebar() {
@@ -149,6 +149,13 @@ export default function EcommerceSidebar() {
       icon: User,
       href: "/user-management",
       allowedRoles: ["admin"]
+    },
+    {
+      id: "documentation",
+      label: "Documentation",
+      icon: FileText,
+      href: "/admin/documentation",
+      allowedRoles: ["admin", "moderator", "staff"]
     },
   ]
 

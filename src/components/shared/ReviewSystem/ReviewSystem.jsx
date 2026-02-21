@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import useAuthContext from "@/hooks/useAuthContext"
-import { useCloudinary } from "@/hooks/useCloudinary" 
+import { useCloudinary } from "@/hooks/useCloudinary"
 import axios from "axios"
-import { ChevronDown, ChevronUp, Flag, ImageIcon, MessageCircle, Reply, Star, ThumbsUp, Upload, X } from "lucide-react"
+import { ChevronDown, ChevronUp, MessageCircle, Reply, Star, Upload, X } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import Swal from "sweetalert2"
@@ -24,15 +24,27 @@ const ReviewSystem = ({ productId, productImage }) => {
   const [expandedComments, setExpandedComments] = useState({})
   const [commentTexts, setCommentTexts] = useState({})
   const [submittingComments, setSubmittingComments] = useState({})
+  const [reviewsEnabled, setReviewsEnabled] = useState(true)
 
   const { user } = useAuthContext()
   const { uploadImage } = useCloudinary() 
 
   useEffect(() => {
+    fetchSettings()
     if (productId) {
       fetchReviews()
     }
   }, [productId, sortBy, filterRating])
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch("/api/general-settings")
+      const data = await response.json()
+      setReviewsEnabled(data.reviewsEnabled ?? true)
+    } catch (error) {
+      console.error("Error fetching settings:", error)
+    }
+  }
 
   const fetchReviews = async () => {
     try {
@@ -311,9 +323,10 @@ const ReviewSystem = ({ productId, productImage }) => {
       </div>
 
       {/* Review Submission Form */}
-      <Card>
-        <CardContent className="p-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">Write a Review</h3>
+      {reviewsEnabled && (
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Write a Review</h3>
           {user ? (
             <div className="space-y-4">
               <div>
@@ -364,6 +377,7 @@ const ReviewSystem = ({ productId, productImage }) => {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* Reviews List */}
       <div className="space-y-6">

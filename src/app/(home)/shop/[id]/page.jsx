@@ -106,12 +106,14 @@ const ProductDetailsPage = () => {
         window.dataLayer.push({
           event: "view_item",
           ecommerce: {
-            currency: data.currency || "BDT",
+            currency: "BDT",
+            coupon: "",
             value: typeof data.price === "string" ? Number.parseInt(data.price) : data.price,
             items: [
               {
                 item_id: data._id,
                 item_name: data.title,
+                item_category: data.category || "",
                 price: typeof data.price === "string" ? Number.parseInt(data.price) : data.price,
               },
             ],
@@ -214,12 +216,14 @@ const ProductDetailsPage = () => {
           window.dataLayer.push({
             event: "add_to_cart",
             ecommerce: {
-              currency: product.currency || "BDT",
+              currency: "BDT",
+              coupon: "",
               value: formatPrice(product.price) * quantity,
               items: [
                 {
                   item_id: product._id,
                   item_name: product.title,
+                  item_category: product.category || "",
                   price: formatPrice(product.price),
                   quantity: quantity,
                   item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),
@@ -246,12 +250,14 @@ const ProductDetailsPage = () => {
           window.dataLayer.push({
             event: "add_to_cart",
             ecommerce: {
-              currency: product.currency || "BDT",
+              currency: "BDT",
+              coupon: "",
               value: formatPrice(product.price) * quantity,
               items: [
                 {
                   item_id: product._id,
                   item_name: product.title,
+                  item_category: product.category || "",
                   price: formatPrice(product.price),
                   quantity: quantity,
                   item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),
@@ -289,12 +295,14 @@ const ProductDetailsPage = () => {
       window.dataLayer.push({
         event: "begin_checkout",
         ecommerce: {
-          currency: product.currency || "BDT",
+          currency: "BDT",
+          coupon: "",
           value: formatPrice(product.price) * quantity,
           items: [
             {
               item_id: product._id,
               item_name: product.title,
+              item_category: product.category || "",
               price: formatPrice(product.price),
               quantity: quantity,
               item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),
@@ -346,13 +354,15 @@ const ProductDetailsPage = () => {
         window.dataLayer.push({
           event: "add_shipping_info",
           ecommerce: {
-            currency: product.currency || "BDT",
+            currency: "BDT",
+            coupon: "",
             value: subtotal + finalCharge,
             shipping_tier: area.area,
             items: [
               {
                 item_id: product._id,
                 item_name: product.title,
+                item_category: product.category || "",
                 price: formatPrice(product.price),
                 quantity: quantity,
                 item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),
@@ -470,13 +480,15 @@ const ProductDetailsPage = () => {
             // 👆 End Customer Data
             ecommerce: {
               transaction_id: orderResponse.data._id || orderResponse.data.orderId,
-              currency: product.currency || "BDT",
+              currency: "BDT",
+              coupon: "",
               value: calculateTotal(),
               shipping: getFinalDeliveryCharge(),
               items: [
                 {
                   item_id: product._id,
                   item_name: product.title,
+                  item_category: product.category || "",
                   price: formatPrice(product.price),
                   quantity: quantity,
                   item_variant: `${selectedColor || ""} ${selectedSize || ""}`.trim(),

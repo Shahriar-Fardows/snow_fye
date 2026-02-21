@@ -187,11 +187,11 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Information */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 h-full">
           <div className="flex items-center mb-6">
             <Phone className="w-6 h-6 text-[#ce967e] mr-3" />
             <h2 className="text-2xl font-bold text-gray-800">
-              {contactInfo.heading}
+              {contactInfo.heading || "Get In Touch"}
             </h2>
           </div>
 
@@ -201,7 +201,7 @@ export default function ContactPage() {
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">Address</h3>
                 <p className="text-gray-600 whitespace-pre-line leading-relaxed">
-                  {contactInfo.address}
+                  {contactInfo.address || "No address provided."}
                 </p>
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function ContactPage() {
               <Phone className="w-6 h-6 text-[#ce967e] mt-1 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">Contact No.</h3>
-                <p className="text-gray-600">{contactInfo.phone}</p>
+                <p className="text-gray-600">{contactInfo.phone || "No phone provided."}</p>
               </div>
             </div>
 
@@ -218,7 +218,7 @@ export default function ContactPage() {
               <Mail className="w-6 h-6 text-[#ce967e] mt-1 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
-                <p className="text-gray-600">{contactInfo.email}</p>
+                <p className="text-gray-600">{contactInfo.email || "No email provided."}</p>
               </div>
             </div>
 
@@ -226,7 +226,7 @@ export default function ContactPage() {
               <Clock className="w-6 h-6 text-[#ce967e] mt-1 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">Store Info</h3>
-                <p className="text-gray-600">{contactInfo.storeInfo}</p>
+                <p className="text-gray-600">{contactInfo.storeInfo || "No store hours provided."}</p>
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import FeaturesAdmin from "@/components/admin/FeaturesAdmin/FeaturesAdmin"
 import axios from "axios"
 import {
   Camera,
@@ -26,7 +27,6 @@ import { Label } from "../../../../components/ui/label"
 import { Switch } from "../../../../components/ui/switch"
 import { Textarea } from "../../../../components/ui/textarea"
 import { useCloudinary } from "../../../../hooks/useCloudinary"
-import FeaturesAdmin from "@/components/admin/FeaturesAdmin/FeaturesAdmin"
 
 const GeneralSettingsForm = () => {
   const { uploadImage, deleteImage, uploading, imageUrl, setImageUrl } = useCloudinary()
@@ -46,8 +46,16 @@ const GeneralSettingsForm = () => {
       linkedin: "",
       youtube: "",
     },
+    whatsappLink: "",
+    messengerPageId: "",
+    tawkToPropertyId: "",
+    tawkToWidgetId: "",
+    whatsappEnabled: true,
+    messengerEnabled: true,
+    tawkToEnabled: true,
     announcements: [],
     announcementsStatus: true,
+    reviewsEnabled: true,
   })
 
   const [originalData, setOriginalData] = useState({})
@@ -59,7 +67,7 @@ const GeneralSettingsForm = () => {
   const fetchSettings = async () => {
     try {
       setFetching(true)
-      const response = await axios.get("/api/settings")
+      const response = await axios.get("/api/general-settings")
       const data = response.data
 
       setFormData({
@@ -72,8 +80,16 @@ const GeneralSettingsForm = () => {
           linkedin: data.socials?.linkedin || "",
           youtube: data.socials?.youtube || "",
         },
+        whatsappLink: data.whatsappLink || "",
+        messengerPageId: data.messengerPageId || "",
+        tawkToPropertyId: data.tawkToPropertyId || "",
+        tawkToWidgetId: data.tawkToWidgetId || "",
+        whatsappEnabled: data.whatsappEnabled ?? true,
+        messengerEnabled: data.messengerEnabled ?? true,
+        tawkToEnabled: data.tawkToEnabled ?? true,
         announcements: data.announcements || [],
         announcementsStatus: data.announcementsStatus ?? true,
+        reviewsEnabled: data.reviewsEnabled ?? true,
       })
 
       setOriginalData(data)
@@ -85,8 +101,16 @@ const GeneralSettingsForm = () => {
         _id: "",
         logo: { url: "", public_id: "", width: 180 },
         socials: { facebook: "", twitter: "", instagram: "", linkedin: "", youtube: "" },
+        whatsappLink: "",
+        messengerPageId: "",
+        tawkToPropertyId: "",
+        tawkToWidgetId: "",
+        whatsappEnabled: true,
+        messengerEnabled: true,
+        tawkToEnabled: true,
         announcements: [],
         announcementsStatus: true,
+        reviewsEnabled: true,
       }
       setFormData(emptyData)
       setOriginalData(emptyData)
@@ -100,6 +124,14 @@ const GeneralSettingsForm = () => {
     setFormData((prev) => ({
       ...prev,
       socials: { ...prev.socials, [platform]: value },
+    }))
+  }
+
+  const handleWhatsAppChange = (value) => {
+    if (!isEditing) return
+    setFormData((prev) => ({
+      ...prev,
+      whatsappLink: value,
     }))
   }
 
@@ -313,6 +345,75 @@ const GeneralSettingsForm = () => {
                   />
                 </div>
               ))}
+              
+              <div className="space-y-2">
+                <Label className="flex items-center space-x-2 capitalize font-medium text-gray-700">
+                  <span className="w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                     W
+                  </span>
+                  <span>WhatsApp Link / Number</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={formData.whatsappLink}
+                  onChange={(e) => handleWhatsAppChange(e.target.value)}
+                  placeholder={`Enter WhatsApp link e.g. https://wa.me/something`}
+                  disabled={!isEditing}
+                  className="bg-gray-50 border border-gray-300 text-sm p-2.5"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center space-x-2 capitalize font-medium text-gray-700">
+                  <span className="w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                     M
+                  </span>
+                  <span>Messenger Page ID</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={formData.messengerPageId || ""}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, messengerPageId: e.target.value }))}
+                  placeholder={`Enter FB Page ID (e.g. 10123456789)`}
+                  disabled={!isEditing}
+                  className="bg-gray-50 border border-gray-300 text-sm p-2.5"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center space-x-2 capitalize font-medium text-gray-700">
+                  <span className="w-4 h-4 rounded-full bg-[#03C04A] text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                     T
+                  </span>
+                  <span>Tawk.to Property ID</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={formData.tawkToPropertyId || ""}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, tawkToPropertyId: e.target.value }))}
+                  placeholder={`Enter Property ID (e.g. 65ed3c...)`}
+                  disabled={!isEditing}
+                  className="bg-gray-50 border border-gray-300 text-sm p-2.5"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center space-x-2 capitalize font-medium text-gray-700">
+                  <span className="w-4 h-4 rounded-full bg-[#03C04A] text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                     T
+                  </span>
+                  <span>Tawk.to Widget ID</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={formData.tawkToWidgetId || ""}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, tawkToWidgetId: e.target.value }))}
+                  placeholder={`Enter Widget ID (e.g. 1hq... OR default)`}
+                  disabled={!isEditing}
+                  className="bg-gray-50 border border-gray-300 text-sm p-2.5"
+                />
+              </div>
+
             </div>
           </div>
         </div>
@@ -368,6 +469,61 @@ const GeneralSettingsForm = () => {
               />
               <Label className={`text-sm font-medium ${formData.announcementsStatus ? "text-green-600" : "text-gray-500"}`}>
                 {formData.announcementsStatus ? "Announcements Enabled" : "Announcements Disabled"}
+              </Label>
+            </div>
+          </div>
+        </div>
+
+        {/* Other Features Toggles */}
+        <div className="bg-white border">
+          <div className="bg-[#fff7ed] text-gray-900 p-4 flex items-center justify-between">
+            <h2 className="flex items-center space-x-2 text-lg font-medium">
+              <Settings className="w-5 h-5 text-[#ff6c2f]" />
+              <span>Feature Toggles</span>
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.reviewsEnabled}
+                onCheckedChange={(checked) => isEditing && setFormData((prev) => ({ ...prev, reviewsEnabled: checked }))}
+                disabled={!isEditing}
+              />
+              <Label className={`text-sm font-medium ${formData.reviewsEnabled ? "text-green-600" : "text-gray-500"}`}>
+                {formData.reviewsEnabled ? "Customer Reviews Enabled" : "Customer Reviews Disabled"}
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.whatsappEnabled}
+                onCheckedChange={(checked) => isEditing && setFormData((prev) => ({ ...prev, whatsappEnabled: checked }))}
+                disabled={!isEditing}
+              />
+              <Label className={`text-sm font-medium ${formData.whatsappEnabled ? "text-green-600" : "text-gray-500"}`}>
+                {formData.whatsappEnabled ? "WhatsApp Chat Widget Enabled" : "WhatsApp Chat Widget Disabled"}
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.messengerEnabled}
+                onCheckedChange={(checked) => isEditing && setFormData((prev) => ({ ...prev, messengerEnabled: checked }))}
+                disabled={!isEditing}
+              />
+              <Label className={`text-sm font-medium ${formData.messengerEnabled ? "text-green-600" : "text-gray-500"}`}>
+                {formData.messengerEnabled ? "Facebook Messenger Plugin Enabled" : "Facebook Messenger Plugin Disabled"}
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.tawkToEnabled}
+                onCheckedChange={(checked) => isEditing && setFormData((prev) => ({ ...prev, tawkToEnabled: checked }))}
+                disabled={!isEditing}
+              />
+              <Label className={`text-sm font-medium ${formData.tawkToEnabled ? "text-green-600" : "text-gray-500"}`}>
+                {formData.tawkToEnabled ? "Tawk.to Chat Widget Enabled" : "Tawk.to Chat Widget Disabled"}
               </Label>
             </div>
           </div>

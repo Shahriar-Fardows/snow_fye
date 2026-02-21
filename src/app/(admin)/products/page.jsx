@@ -1,7 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
 import axios from "axios";
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from "react";
+import 'react-quill-new/dist/quill.snow.css';
 import Swal from "sweetalert2";
+
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 const ProductsTable = () => {
     const [products, setProducts] = useState([]);
@@ -284,7 +288,7 @@ const ProductsTable = () => {
                                             <div className="font-medium text-gray-900">{product.title}</div>
                                             {product.description && (
                                                 <div className="text-sm text-gray-500 mt-1">
-                                                    {product.description.substring(0, 50)}...
+                                                    {product.description.replace(/<[^>]*>?/gm, '').substring(0, 50)}...
                                                 </div>
                                             )}
                                         </td>
@@ -432,14 +436,16 @@ const ProductsTable = () => {
                                     <div>
                                         <h3 className="font-semibold text-gray-800 mb-2">Description</h3>
                                         {isEditing ? (
-                                            <textarea
-                                                value={editFormData.description || ''}
-                                                onChange={(e) => handleInputChange('description', e.target.value)}
-                                                rows={3}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
+                                            <div className="bg-white pb-12 rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
+                                                <ReactQuill 
+                                                    theme="snow" 
+                                                    value={editFormData.description || ''} 
+                                                    onChange={(val) => handleInputChange('description', val)} 
+                                                    className="h-48"
+                                                />
+                                            </div>
                                         ) : (
-                                            <p className="text-gray-600">{selectedProduct.description}</p>
+                                            <div className="text-gray-600 prose py-2" dangerouslySetInnerHTML={{ __html: selectedProduct.description }} />
                                         )}
                                     </div>
 

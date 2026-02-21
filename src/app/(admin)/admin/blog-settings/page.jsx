@@ -1,11 +1,15 @@
 "use client";
 
-import useAuthContext from "../../../../hooks/useAuthContext";
-import { useCloudinary } from "../../../../hooks/useCloudinary";
 import axios from "axios";
 import { AlertCircle, Edit2, Image, Plus, Save, Trash2, X } from "lucide-react";
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from "react";
+import 'react-quill-new/dist/quill.snow.css';
 import Swal from "sweetalert2";
+import useAuthContext from "../../../../hooks/useAuthContext";
+import { useCloudinary } from "../../../../hooks/useCloudinary";
+
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 export default function BlogAdminPanel() {
   const [blogs, setBlogs] = useState([]);
@@ -390,14 +394,15 @@ export default function BlogAdminPanel() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Blog Content *
                 </label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  rows={12}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-                  placeholder="Write your blog content here... (Supports HTML/Markdown)"
-                  required
-                />
+                <div className="bg-white pb-12 rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent font-mono text-sm">
+                  <ReactQuill 
+                    theme="snow" 
+                    value={formData.content} 
+                    onChange={(value) => setFormData({ ...formData, content: value })} 
+                    className="h-64" 
+                    placeholder="Write your blog content here... (Supports HTML/Markdown)"
+                  />
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">

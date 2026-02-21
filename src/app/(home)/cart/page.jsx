@@ -34,13 +34,15 @@ const CartPage = () => {
       window.dataLayer.push({
         event: "view_cart",
         ecommerce: {
-          currency: cartItems[0]?.currency || "BDT",
+          currency: "BDT",
+          coupon: "",
           value: totalValue,
           items: cartItems.map((item, index) => ({
             item_id: item._id,
             item_name: item.title,
+            item_category: item.category || "",
             price: formatPrice(item.price),
-            currency: item.currency || "BDT",
+            currency: "BDT",
             quantity: item.quantity,
             item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim(),
             index: index
@@ -163,11 +165,13 @@ const CartPage = () => {
             window.dataLayer.push({
               event: "remove_from_cart",
               ecommerce: {
-                currency: item.currency || "BDT",
+                currency: "BDT",
+                coupon: "",
                 value: formatPrice(item.price) * item.quantity,
                 items: [{
                   item_id: item._id,
                   item_name: item.title,
+                  item_category: item.category || "",
                   price: formatPrice(item.price),
                   quantity: item.quantity,
                   item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim()
@@ -215,11 +219,13 @@ const CartPage = () => {
       window.dataLayer.push({
         event: "begin_checkout",
         ecommerce: {
-          currency: cartItems[0]?.currency || "BDT",
+          currency: "BDT",
+          coupon: "",
           value: calculateSubtotal(),
           items: cartItems.map((item) => ({
             item_id: item._id,
             item_name: item.title,
+            item_category: item.category || "",
             price: formatPrice(item.price),
             quantity: item.quantity,
             item_variant: `${item.selectedColor || ""} ${item.selectedSize || ""}`.trim()

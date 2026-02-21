@@ -74,6 +74,22 @@ export async function POST(request) {
         return new Response(JSON.stringify({ message: "Product ID is required" }), { status: 400 });
       }
 
+      // 🛑 Check if reviews are globally enabled
+      const settings = await db.collection("general_settings").findOne({});
+      if (settings && settings.reviewsEnabled === false) {
+        return new Response(JSON.stringify({ message: "Reviews are currently disabled" }), { status: 403 });
+      }
+
+      // 🛑 Verify Purchase
+      const hasPurchased = await db.collection("orders").findOne({
+        userEmail: data.userEmail,
+        "items.productId": data.productId
+      });
+
+      if (!hasPurchased) {
+        return new Response(JSON.stringify({ message: "You can only review products you have purchased" }), { status: 403 });
+      }
+
       const review = {
         productId: data.productId,
         userName: data.userName,
@@ -83,7 +99,7 @@ export async function POST(request) {
         productImage: data.productImage || "",
         images: data.images || [],
         comments: [],
-        verifiedPurchase: false,
+        verifiedPurchase: true,
         createdAt: new Date(),
       };
 

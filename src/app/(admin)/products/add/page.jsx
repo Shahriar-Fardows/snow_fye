@@ -3,13 +3,18 @@ import { Button } from "@/components/ui/button";
 import { useCloudinary } from "@/hooks/useCloudinary";
 import axios from "axios";
 import { DollarSign, PackageSearch } from "lucide-react";
+import dynamic from 'next/dynamic';
 import { useState } from "react";
+import 'react-quill-new/dist/quill.snow.css';
 import Swal from "sweetalert2";
+
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 const AddProductPage = () => {
   // 🔥 mainImage কে array করা হলো
   const [mainImages, setMainImages] = useState([]);
   const [variants, setVariants] = useState([]);
+  const [description, setDescription] = useState("");
   const { uploadImage } = useCloudinary();
 
   const getPublicIdFromUrl = (url) => {
@@ -25,7 +30,6 @@ const AddProductPage = () => {
     const form = e.target;
 
     const title = form.title.value;
-    const description = form.description.value;
     const price = form.price.value;
     const compareAtPrice = form.compareAtPrice.value;
     const costPerItem = form.costPerItem.value;
@@ -95,6 +99,7 @@ const AddProductPage = () => {
       });
 
       form.reset();
+      setDescription("");
       setMainImages([]); // reset multiple
       setVariants([]);
     } catch (error) {
@@ -181,12 +186,9 @@ const AddProductPage = () => {
           <label className="block mb-2 text-sm font-medium text-gray-900">
             Product Description
           </label>
-          <textarea
-            name="description"
-            className="w-full rounded-lg border border-gray-300 p-2 text-sm focus:border-[#ff6c2f] focus:ring-[#ff6c2f]"
-            placeholder="Enter product description"
-            rows="4"
-          ></textarea>
+          <div className="bg-white pb-12 rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-[#ff6c2f] focus-within:border-[#ff6c2f]">
+             <ReactQuill theme="snow" value={description} onChange={setDescription} className="h-48" />
+          </div>
         </div>
 
         {/* 🔥 Multiple Main Images Upload */}
