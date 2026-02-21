@@ -65,7 +65,7 @@ export default function AdminDocumentationPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="container max-w-5xl mx-auto">
+      <div className="container mx-auto">
         {/* Header section */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
