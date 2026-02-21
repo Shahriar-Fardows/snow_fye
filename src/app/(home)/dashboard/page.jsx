@@ -47,7 +47,11 @@ const Dashboard = () => {
     try {
       setLoading(true)
       const response = await axios.get(`/api/orders?userEmail=${user.email}`)
-      const ordersData = response.data || []
+      let ordersData = response.data || []
+      
+      // Sort orders by newest first
+      ordersData = ordersData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      
       setOrders(ordersData)
 
       // ---------------------------------------------------------
@@ -213,6 +217,7 @@ const Dashboard = () => {
     return (
       status?.toLowerCase() !== "shipped" &&
       status?.toLowerCase() !== "delivered" &&
+      status?.toLowerCase() !== "completed" &&
       status?.toLowerCase() !== "cancelled"
     )
   }
