@@ -1,10 +1,8 @@
 import Context from "@/auth/context/Context";
 import Announcement from "@/components/shared/Announcement/Announcement";
 import Footer from "@/components/shared/Footer/Footer";
-import MessengerChat from "@/components/shared/MessengerChat/MessengerChat";
 import Navbar from "@/components/shared/Navbar/Navbar";
-import TawkToScript from "@/components/shared/TawkToScript/TawkToScript";
-import WhatsAppBubble from "@/components/shared/WhatsAppBubble/WhatsAppBubble";
+import SupportWidget from "@/components/shared/SupportWidget/SupportWidget";
 import { Merriweather, Playfair_Display } from "next/font/google";
 import Script from "next/script"; // Import Next.js Script
 import "../globals.css";
@@ -84,9 +82,7 @@ export default function RootLayout({ children }) {
         </Context>
 
         <Footer />
-        <WhatsAppBubble />
-        <MessengerChat />
-        <TawkToScript />
+        <SupportWidget />
       </body>
     </html>
   );
