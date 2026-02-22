@@ -47,21 +47,10 @@ export default function SupportWidget() {
 
               // Inject Facebook SDK natively inside a check
               if (!document.getElementById("facebook-jssdk")) {
-                const fbRoot = document.createElement("div");
-                fbRoot.id = "fb-root";
-                document.body.appendChild(fbRoot);
-
-                const fbChatDiv = document.createElement("div");
-                fbChatDiv.id = "fb-customer-chat";
-                fbChatDiv.className = "fb-customerchat";
-                fbChatDiv.setAttribute("attribution", "setup_tool");
-                fbChatDiv.setAttribute("page_id", pageId);
-                document.body.appendChild(fbChatDiv);
-
-                window.fbAsyncInit = function() {
+                window.fbAsyncInit = function () {
                   window.FB.init({
-                    xfbml      : true,
-                    version    : 'v18.0'
+                    xfbml: true,
+                    version: "v18.0",
                   });
                 };
 
@@ -84,13 +73,18 @@ export default function SupportWidget() {
               ),
               color: "bg-[#0084FF] hover:bg-[#006bd1]",
               action: () => {
-                if (window.FB && window.FB.CustomerChat) {
-                  // Facebook requires the plugin to be loaded and visible. 
-                  window.FB.CustomerChat.show(true);
-                  window.FB.CustomerChat.showDialog();
+                if (window.FB) {
+                  window.FB.XFBML.parse();
+                  if (window.FB.CustomerChat) {
+                    window.FB.CustomerChat.show(true);
+                    window.FB.CustomerChat.showDialog();
+                  } else {
+                    console.log("CustomerChat plugin not ready yet.");
+                    alert("Messenger is connecting... Please wait a few seconds or disable ad blockers.");
+                  }
                 } else {
-                  console.log("CustomerChat plugin not ready yet or blocked.");
-                  alert("Please wait a moment for the Messenger chat to load. If it doesn't appear, your AdBlocker might be blocking it.");
+                  console.log("FB SDK not loaded.");
+                  alert("Messenger is blocked by your browser or an extension. Try disabling AdBlocker.");
                 }
               },
             });
@@ -173,12 +167,31 @@ export default function SupportWidget() {
   // Single active support option -> Click opens directly without menu
   if (supportOptions.length === 1) {
     const option = supportOptions[0];
+    // If it's only messenger, we just render the raw div. 
+    // The FB SDK will automatically create the bubble, we don't need our custom button.
     if (option.id === "messenger") {
-      return null;
+      return (
+        <>
+          <div id="fb-root"></div>
+          <div 
+            id="fb-customer-chat" 
+            className="fb-customerchat"
+            attribution="biz_inbox"
+            page_id={messengerConfig.pageId}
+          ></div>
+        </>
+      );
     }
 
     return (
       <>
+        <div id="fb-root"></div>
+        <div 
+          id="fb-customer-chat" 
+          className="fb-customerchat"
+          attribution="biz_inbox"
+          page_id={messengerConfig.pageId}
+        ></div>
         {option.action ? (
           <button
             onClick={option.action}
@@ -205,6 +218,15 @@ export default function SupportWidget() {
   // Multiple active options -> Click toggles menu
   return (
     <>
+      <div id="fb-root"></div>
+      {messengerConfig && (
+        <div 
+          id="fb-customer-chat" 
+          className="fb-customerchat"
+          attribution="biz_inbox"
+          page_id={messengerConfig.pageId}
+        ></div>
+      )}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" ref={menuRef}>
         {/* Menu Overlay */}
         {isOpen && (
