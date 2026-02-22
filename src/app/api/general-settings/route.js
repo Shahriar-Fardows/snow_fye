@@ -32,7 +32,7 @@ export async function POST(req) {
 
     const { 
       logo, socials, announcements, announcementsStatus, 
-      reviewsEnabled, whatsappLink, messengerPageId, 
+      reviewsEnabled, whatsappLink, messengerPageId, messengerAppId,
       tawkToPropertyId, tawkToWidgetId,
       whatsappEnabled, messengerEnabled, tawkToEnabled
     } = await req.json();
@@ -56,6 +56,7 @@ export async function POST(req) {
           reviewsEnabled: reviewsEnabled ?? true,
           whatsappLink: whatsappLink || "",
           messengerPageId: messengerPageId || "",
+          messengerAppId: messengerAppId || "",
           tawkToPropertyId: tawkToPropertyId || "",
           tawkToWidgetId: tawkToWidgetId || "",
           whatsappEnabled: whatsappEnabled ?? true,

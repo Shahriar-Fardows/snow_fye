@@ -3,21 +3,21 @@
 import FeaturesAdmin from "@/components/admin/FeaturesAdmin/FeaturesAdmin"
 import axios from "axios"
 import {
-  Camera,
-  Edit,
-  Facebook,
-  Globe,
-  Instagram,
-  Linkedin,
-  Loader2,
-  Megaphone,
-  Plus,
-  Save,
-  Settings,
-  Twitter,
-  Upload,
-  X,
-  Youtube,
+    Camera,
+    Edit,
+    Facebook,
+    Globe,
+    Instagram,
+    Linkedin,
+    Loader2,
+    Megaphone,
+    Plus,
+    Save,
+    Settings,
+    Twitter,
+    Upload,
+    X,
+    Youtube,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import SiteInfoPage from "../../../../components/admin/siteInfo/SiteInfo"
@@ -48,6 +48,7 @@ const GeneralSettingsForm = () => {
     },
     whatsappLink: "",
     messengerPageId: "",
+    messengerAppId: "",
     tawkToPropertyId: "",
     tawkToWidgetId: "",
     whatsappEnabled: true,
@@ -82,6 +83,7 @@ const GeneralSettingsForm = () => {
         },
         whatsappLink: data.whatsappLink || "",
         messengerPageId: data.messengerPageId || "",
+        messengerAppId: data.messengerAppId || "",
         tawkToPropertyId: data.tawkToPropertyId || "",
         tawkToWidgetId: data.tawkToWidgetId || "",
         whatsappEnabled: data.whatsappEnabled ?? true,
@@ -103,6 +105,7 @@ const GeneralSettingsForm = () => {
         socials: { facebook: "", twitter: "", instagram: "", linkedin: "", youtube: "" },
         whatsappLink: "",
         messengerPageId: "",
+        messengerAppId: "",
         tawkToPropertyId: "",
         tawkToWidgetId: "",
         whatsappEnabled: true,
@@ -375,6 +378,23 @@ const GeneralSettingsForm = () => {
                   value={formData.messengerPageId || ""}
                   onChange={(e) => isEditing && setFormData(prev => ({ ...prev, messengerPageId: e.target.value }))}
                   placeholder={`Enter FB Page ID (e.g. 10123456789)`}
+                  disabled={!isEditing}
+                  className="bg-gray-50 border border-gray-300 text-sm p-2.5"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center space-x-2 capitalize font-medium text-gray-700">
+                  <span className="w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                     M
+                  </span>
+                  <span>Messenger App ID</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={formData.messengerAppId || ""}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, messengerAppId: e.target.value }))}
+                  placeholder={`Enter FB App ID (e.g. 123456789)`}
                   disabled={!isEditing}
                   className="bg-gray-50 border border-gray-300 text-sm p-2.5"
                 />

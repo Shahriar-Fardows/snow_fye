@@ -1,10 +1,17 @@
 "use client";
 
 import { MessageCircle, X } from "lucide-react";
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from "react";
+
+const MessengerCustomerChat = dynamic(
+  () => import("react-messenger-customer-chat"),
+  { ssr: false }
+);
 
 export default function SupportWidget() {
   const [supportOptions, setSupportOptions] = useState([]);
+  const [messengerConfig, setMessengerConfig] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -37,9 +44,15 @@ export default function SupportWidget() {
             });
           }
 
-          // Facebook Messenger (SDK Injection)
+          // Facebook Messenger (React Component Injection)
           if (data.messengerPageId && data.messengerEnabled !== false) {
             const pageId = data.messengerPageId.trim();
+            const appId = (data.messengerAppId || "123456789").trim();
+            
+            if (pageId) {
+              setMessengerConfig({ pageId, appId });
+            }
+
             options.push({
               id: "messenger",
               name: "Facebook Messenger",
@@ -50,38 +63,16 @@ export default function SupportWidget() {
               ),
               color: "bg-[#0084FF] hover:bg-[#006bd1]",
               action: () => {
-                if (window.FB) window.FB.CustomerChat.showDialog();
+                if (window.FB && window.FB.CustomerChat) {
+                  // Facebook requires the plugin to be loaded and visible. 
+                  window.FB.CustomerChat.show(true);
+                  window.FB.CustomerChat.showDialog();
+                } else {
+                  console.log("CustomerChat plugin not ready yet or blocked.");
+                  alert("Facebook Messenger is loading. If nothing happens, please ensure your AdBlocker is disabled, your App ID & Page ID are correct, and your domain is whitelisted on Facebook.");
+                }
               },
             });
-
-            // Inject FB SDK if it doesn't exist
-            if (!document.getElementById("facebook-jssdk")) {
-              const fbRoot = document.createElement("div");
-              fbRoot.id = "fb-root";
-              document.body.appendChild(fbRoot);
-
-              const chatDiv = document.createElement("div");
-              chatDiv.className = "fb-customerchat";
-              chatDiv.setAttribute("attribution", "biz_inbox");
-              chatDiv.setAttribute("page_id", pageId);
-              document.body.appendChild(chatDiv);
-
-              window.fbAsyncInit = function () {
-                window.FB.init({ xfbml: true, version: "v18.0" });
-                // Hide native bubble initially if we have a custom menu
-                window.FB.Event.subscribe('customerchat.load', () => {
-                   if (options.length > 1) {
-                     window.FB.CustomerChat.hide();
-                   }
-                });
-              };
-              const script = document.createElement("script");
-              script.id = "facebook-jssdk";
-              script.src = "https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
-              script.async = true;
-              script.defer = true;
-              document.body.appendChild(script);
-            }
           }
 
           // Tawk.to (Script Injection)
@@ -143,37 +134,72 @@ export default function SupportWidget() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Hide native FB bubble if multiple options are enabled.
+  useEffect(() => {
+    if (supportOptions.length > 1 && messengerConfig) {
+      const fbCheck = setInterval(() => {
+        if (window.FB && window.FB.CustomerChat) {
+          window.FB.CustomerChat.hide();
+          clearInterval(fbCheck);
+        }
+      }, 500);
+      return () => clearInterval(fbCheck);
+    }
+  }, [supportOptions.length, messengerConfig]);
+
   if (supportOptions.length === 0) return null;
 
   // Single active support option -> Click opens directly without menu
   if (supportOptions.length === 1) {
     const option = supportOptions[0];
-    return option.action ? (
-      <button
-        onClick={option.action}
-        className={`fixed bottom-6 right-6 z-50 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110 flex items-center justify-center ${option.color}`}
-        title={`Contact us via ${option.name}`}
-      >
-        {option.icon}
-      </button>
-    ) : (
-      <a
-        href={option.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`fixed bottom-6 right-6 z-50 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110 flex items-center justify-center ${option.color}`}
-        title={`Contact us via ${option.name}`}
-      >
-        {option.icon}
-      </a>
+    if (option.id === "messenger") {
+      return (
+        <MessengerCustomerChat
+          pageId={messengerConfig.pageId}
+          appId={messengerConfig.appId || "none"}
+          version="18.0"
+        />
+      );
+    }
+
+    return (
+      <>
+        {option.action ? (
+          <button
+            onClick={option.action}
+            className={`fixed bottom-6 right-6 z-50 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110 flex items-center justify-center ${option.color}`}
+            title={`Contact us via ${option.name}`}
+          >
+            {option.icon}
+          </button>
+        ) : (
+          <a
+            href={option.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`fixed bottom-6 right-6 z-50 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110 flex items-center justify-center ${option.color}`}
+            title={`Contact us via ${option.name}`}
+          >
+            {option.icon}
+          </a>
+        )}
+      </>
     );
   }
 
   // Multiple active options -> Click toggles menu
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" ref={menuRef}>
-      {/* Menu Overlay */}
-      {isOpen && (
+    <>
+      {messengerConfig && (
+        <MessengerCustomerChat
+          pageId={messengerConfig.pageId}
+          appId={messengerConfig.appId}
+          version="18.0"
+        />
+      )}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" ref={menuRef}>
+        {/* Menu Overlay */}
+        {isOpen && (
         <div className="mb-4 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden w-64 animate-in fade-in slide-in-from-bottom-5 duration-200">
           <div className="bg-gray-50 border-b border-gray-100 p-4 text-center">
             <h3 className="text-gray-900 font-semibold">How can we help?</h3>
@@ -226,5 +252,6 @@ export default function SupportWidget() {
         {isOpen ? <X className="w-7 h-7" /> : <MessageCircle className="w-7 h-7" />}
       </button>
     </div>
+    </>
   );
 }
