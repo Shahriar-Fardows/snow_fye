@@ -1,8 +1,13 @@
 "use client";
 
 import { MessageCircle, X } from "lucide-react";
-import Script from "next/script";
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from "react";
+
+const MessengerCustomerChat = dynamic(
+  () => import("react-messenger-customer-chat"),
+  { ssr: false }
+);
 
 export default function SupportWidget() {
   const [supportOptions, setSupportOptions] = useState([]);
@@ -44,10 +49,8 @@ export default function SupportWidget() {
             const pageId = data.messengerPageId.trim();
             
             if (pageId) {
-              setMessengerConfig({ pageId });
-
-              // Remove manual SDK injection, we will use next/script
-              setMessengerConfig({ pageId });
+              const appId = data.messengerAppId ? data.messengerAppId.trim() : "none";
+              setMessengerConfig({ pageId, appId });
             }
 
             options.push({
@@ -60,18 +63,12 @@ export default function SupportWidget() {
               ),
               color: "bg-[#0084FF] hover:bg-[#006bd1]",
               action: () => {
-                if (window.FB) {
-                  window.FB.XFBML.parse();
-                  if (window.FB.CustomerChat) {
-                    window.FB.CustomerChat.show(true);
-                    window.FB.CustomerChat.showDialog();
-                  } else {
-                    console.log("CustomerChat plugin not ready yet.");
-                    alert("Messenger is connecting... Please wait a few seconds or disable ad blockers.");
-                  }
+                if (window.FB && window.FB.CustomerChat) {
+                  window.FB.CustomerChat.show(true);
+                  window.FB.CustomerChat.showDialog();
                 } else {
-                  console.log("FB SDK not loaded.");
-                  alert("Messenger is blocked by your browser or an extension. Try disabling AdBlocker.");
+                  console.log("CustomerChat plugin not ready yet.");
+                  alert("Please wait a moment for the Messenger chat to load.");
                 }
               },
             });
@@ -158,52 +155,20 @@ export default function SupportWidget() {
     // The FB SDK will automatically create the bubble, we don't need our custom button.
     if (option.id === "messenger") {
       return (
-        <>
-          <div id="fb-root"></div>
-          <div 
-            id="fb-customer-chat" 
-            className="fb-customerchat"
-            attribution="biz_inbox"
-            page_id={messengerConfig.pageId}
-          ></div>
-          <Script
-             id="facebook-jssdk"
-             src="https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js"
-             strategy="lazyOnload"
-             onLoad={() => {
-               if (window.FB) {
-                 window.FB.init({
-                   xfbml: true,
-                   version: "v18.0",
-                 });
-               }
-             }}
-          />
-        </>
+        <MessengerCustomerChat
+          pageId={messengerConfig.pageId}
+          appId={messengerConfig.appId}
+          version="18.0"
+        />
       );
     }
 
     return (
       <>
-        <div id="fb-root"></div>
-        <div 
-          id="fb-customer-chat" 
-          className="fb-customerchat"
-          attribution="biz_inbox"
-          page_id={messengerConfig.pageId}
-        ></div>
-        <Script
-           id="facebook-jssdk"
-           src="https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js"
-           strategy="lazyOnload"
-           onLoad={() => {
-             if (window.FB) {
-               window.FB.init({
-                 xfbml: true,
-                 version: "v18.0",
-               });
-             }
-           }}
+        <MessengerCustomerChat
+          pageId={messengerConfig.pageId}
+          appId={messengerConfig.appId}
+          version="18.0"
         />
         {option.action ? (
           <button
@@ -231,29 +196,12 @@ export default function SupportWidget() {
   // Multiple active options -> Click toggles menu
   return (
     <>
-      <div id="fb-root"></div>
       {messengerConfig && (
-        <>
-          <div 
-            id="fb-customer-chat" 
-            className="fb-customerchat"
-            attribution="biz_inbox"
-            page_id={messengerConfig.pageId}
-          ></div>
-          <Script
-             id="facebook-jssdk"
-             src="https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js"
-             strategy="lazyOnload"
-             onLoad={() => {
-               if (window.FB) {
-                 window.FB.init({
-                   xfbml: true,
-                   version: "v18.0",
-                 });
-               }
-             }}
-          />
-        </>
+        <MessengerCustomerChat
+          pageId={messengerConfig.pageId}
+          appId={messengerConfig.appId}
+          version="18.0"
+        />
       )}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" ref={menuRef}>
         {/* Menu Overlay */}
