@@ -92,7 +92,7 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="min-h-screen p-6 bg-gray-50/50">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="mx-auto space-y-6">
         
         {/* Header Region */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">

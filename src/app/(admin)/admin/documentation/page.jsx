@@ -122,7 +122,7 @@ export default function AdminDocumentationPage() {
         <p className="text-gray-500 mt-2 text-lg">Official reference guide and manual for Snowfye system administration.</p>
       </div>
 
-      <div className="flex flex-col md:flex-row max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row mx-auto">
         
         {/* Sidebar Navigation */}
         <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200 bg-gray-50/50 p-6 flex-shrink-0 min-h-[calc(100vh-140px)]">
