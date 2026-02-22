@@ -51,6 +51,13 @@ export default function SupportWidget() {
                 fbRoot.id = "fb-root";
                 document.body.appendChild(fbRoot);
 
+                const fbChatDiv = document.createElement("div");
+                fbChatDiv.id = "fb-customer-chat";
+                fbChatDiv.className = "fb-customerchat";
+                fbChatDiv.setAttribute("attribution", "setup_tool");
+                fbChatDiv.setAttribute("page_id", pageId);
+                document.body.appendChild(fbChatDiv);
+
                 window.fbAsyncInit = function() {
                   window.FB.init({
                     xfbml      : true,
@@ -82,8 +89,8 @@ export default function SupportWidget() {
                   window.FB.CustomerChat.show(true);
                   window.FB.CustomerChat.showDialog();
                 } else {
-                  console.log("CustomerChat plugin not ready yet or blocked. Opening Messenger app/website fallback.");
-                  window.open(`https://m.me/${pageId}`, "_blank");
+                  console.log("CustomerChat plugin not ready yet or blocked.");
+                  alert("Please wait a moment for the Messenger chat to load. If it doesn't appear, your AdBlocker might be blocking it.");
                 }
               },
             });
@@ -148,7 +155,7 @@ export default function SupportWidget() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Hide native FB bubble if multiple options are enabled.
+  // Avoid hiding FB bubble if it's the only option, but we want our custom SupportWidget to control it if multiple
   useEffect(() => {
     if (supportOptions.length > 1 && messengerConfig) {
       const fbCheck = setInterval(() => {
@@ -167,14 +174,7 @@ export default function SupportWidget() {
   if (supportOptions.length === 1) {
     const option = supportOptions[0];
     if (option.id === "messenger") {
-      return (
-        <div 
-          id="fb-customer-chat" 
-          className="fb-customerchat"
-          attribution="setup_tool"
-          page_id={messengerConfig.pageId}
-        ></div>
-      );
+      return null;
     }
 
     return (
@@ -205,14 +205,6 @@ export default function SupportWidget() {
   // Multiple active options -> Click toggles menu
   return (
     <>
-      {messengerConfig && (
-        <div 
-          id="fb-customer-chat" 
-          className="fb-customerchat"
-          attribution="setup_tool"
-          page_id={messengerConfig.pageId}
-        ></div>
-      )}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" ref={menuRef}>
         {/* Menu Overlay */}
         {isOpen && (
