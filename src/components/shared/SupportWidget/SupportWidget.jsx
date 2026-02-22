@@ -1,6 +1,7 @@
 "use client";
 
 import { MessageCircle, X } from "lucide-react";
+import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
 
 export default function SupportWidget() {
@@ -45,22 +46,8 @@ export default function SupportWidget() {
             if (pageId) {
               setMessengerConfig({ pageId });
 
-              // Inject Facebook SDK natively inside a check
-              if (!document.getElementById("facebook-jssdk")) {
-                window.fbAsyncInit = function () {
-                  window.FB.init({
-                    xfbml: true,
-                    version: "v18.0",
-                  });
-                };
-
-                const script = document.createElement("script");
-                script.id = "facebook-jssdk";
-                script.src = "https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
-                script.async = true;
-                script.defer = true;
-                document.body.appendChild(script);
-              }
+              // Remove manual SDK injection, we will use next/script
+              setMessengerConfig({ pageId });
             }
 
             options.push({
@@ -179,6 +166,19 @@ export default function SupportWidget() {
             attribution="biz_inbox"
             page_id={messengerConfig.pageId}
           ></div>
+          <Script
+             id="facebook-jssdk"
+             src="https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js"
+             strategy="lazyOnload"
+             onLoad={() => {
+               if (window.FB) {
+                 window.FB.init({
+                   xfbml: true,
+                   version: "v18.0",
+                 });
+               }
+             }}
+          />
         </>
       );
     }
@@ -192,6 +192,19 @@ export default function SupportWidget() {
           attribution="biz_inbox"
           page_id={messengerConfig.pageId}
         ></div>
+        <Script
+           id="facebook-jssdk"
+           src="https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js"
+           strategy="lazyOnload"
+           onLoad={() => {
+             if (window.FB) {
+               window.FB.init({
+                 xfbml: true,
+                 version: "v18.0",
+               });
+             }
+           }}
+        />
         {option.action ? (
           <button
             onClick={option.action}
@@ -220,12 +233,27 @@ export default function SupportWidget() {
     <>
       <div id="fb-root"></div>
       {messengerConfig && (
-        <div 
-          id="fb-customer-chat" 
-          className="fb-customerchat"
-          attribution="biz_inbox"
-          page_id={messengerConfig.pageId}
-        ></div>
+        <>
+          <div 
+            id="fb-customer-chat" 
+            className="fb-customerchat"
+            attribution="biz_inbox"
+            page_id={messengerConfig.pageId}
+          ></div>
+          <Script
+             id="facebook-jssdk"
+             src="https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js"
+             strategy="lazyOnload"
+             onLoad={() => {
+               if (window.FB) {
+                 window.FB.init({
+                   xfbml: true,
+                   version: "v18.0",
+                 });
+               }
+             }}
+          />
+        </>
       )}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" ref={menuRef}>
         {/* Menu Overlay */}
