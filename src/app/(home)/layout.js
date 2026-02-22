@@ -79,10 +79,10 @@ export default function RootLayout({ children }) {
 
           {/* Main content */}
           <main className="flex-grow">{children}</main>
+          <SupportWidget />
         </Context>
 
         <Footer />
-        <SupportWidget />
       </body>
     </html>
   );

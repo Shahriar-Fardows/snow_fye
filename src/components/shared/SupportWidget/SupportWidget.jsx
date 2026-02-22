@@ -1,5 +1,6 @@
 "use client";
 
+import useAuthContext from "@/hooks/useAuthContext";
 import { MessageCircle, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -8,8 +9,13 @@ export default function SupportWidget() {
   const [messengerConfig, setMessengerConfig] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const { user } = useAuthContext();
+  const optionsFetched = useRef(false);
 
   useEffect(() => {
+    // Only fetch settings once per component mount
+    if (optionsFetched.current) return;
+    
     const fetchSettings = async () => {
       try {
         const response = await fetch("/api/general-settings");
@@ -81,6 +87,14 @@ export default function SupportWidget() {
               window.Tawk_API = window.Tawk_API || {};
               window.Tawk_LoadStart = new Date();
               
+              // Set Logged In Visitor Information
+              if (data.tawkToIdentifyUsers && user?.email) {
+                window.Tawk_API.visitor = {
+                  name: user?.displayName || user?.name || "Customer",
+                  email: user.email
+                };
+              }
+
               // Hide native bubble if multiple options exist
               window.Tawk_API.onLoad = function() {
                   if (options.length > 1) {
@@ -99,6 +113,7 @@ export default function SupportWidget() {
           }
 
           setSupportOptions(options);
+          optionsFetched.current = true;
         }
       } catch (error) {
         console.error("Error fetching support settings:", error);
@@ -106,7 +121,7 @@ export default function SupportWidget() {
     };
 
     fetchSettings();
-  }, []);
+  }, [user]); // Re-run when user loads to inject identity if needed
 
   // Close menu when clicking outside
   useEffect(() => {

@@ -1,0 +1,51 @@
+Ôû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./src/app/(admin)/admin/analytics/page.jsx:18:1
+Module not found: Can't resolve 'recharts'
+  16 | import Link from "next/link";
+  17 | import { useEffect, useState } from "react";
+> 18 | import {
+     | ^^^^^^^^
+> 19 |     CartesianGrid,
+     | ^^^^^^^^^^^^^^^^^^
+> 20 |     Legend,
+     | ^^^^^^^^^^^^^^^^^^
+> 21 |     Line,
+     | ^^^^^^^^^^^^^^^^^^
+> 22 |     LineChart,
+     | ^^^^^^^^^^^^^^^^^^
+> 23 |     Tooltip as RechartsTooltip,
+     | ^^^^^^^^^^^^^^^^^^
+> 24 |     ResponsiveContainer,
+     | ^^^^^^^^^^^^^^^^^^
+> 25 |     XAxis,
+     | ^^^^^^^^^^^^^^^^^^
+> 26 |     YAxis
+     | ^^^^^^^^^^^^^^^^^^
+> 27 | } from "recharts";
+     | ^^^^^^^^^^^^^^^^^^^
+  28 |
+  29 | export default function AnalyticsDashboard() {
+  30 |   const [data, setData] = useState(null);
+
+
+
+Import traces:
+  Client Component Browser:
+    ./src/app/(admin)/admin/analytics/page.jsx [Client Component Browser]
+    ./src/app/(admin)/admin/analytics/page.jsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/(admin)/admin/analytics/page.jsx [Client Component SSR]
+    ./src/app/(admin)/admin/analytics/page.jsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (./src/app/(admin)/admin/analytics/page.jsx:18:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)

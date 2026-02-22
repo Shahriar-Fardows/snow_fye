@@ -15,6 +15,7 @@ import {
     Plus,
     Settings,
     ShoppingCart,
+    TrendingUp,
     User,
     X
 } from "lucide-react"
@@ -58,6 +59,13 @@ export default function EcommerceSidebar() {
       icon: Home,
       href: "/admin",
       allowedRoles: ["admin", "moderator", "staff"]
+    },
+    {
+      id: "analytics",
+      label: "Analytics",
+      icon: TrendingUp,
+      href: "/admin/analytics",
+      allowedRoles: ["admin", "moderator"]
     },
     {
       id: "products",

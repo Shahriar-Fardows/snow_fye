@@ -34,7 +34,8 @@ export async function POST(req) {
       logo, socials, announcements, announcementsStatus, 
       reviewsEnabled, whatsappLink, messengerPageId, messengerAppId,
       tawkToPropertyId, tawkToWidgetId,
-      whatsappEnabled, messengerEnabled, tawkToEnabled
+      whatsappEnabled, messengerEnabled, tawkToEnabled,
+      gaPropertyId, gaServiceJson, tawkToIdentifyUsers
     } = await req.json();
 
     // Check old settings
@@ -62,6 +63,9 @@ export async function POST(req) {
           whatsappEnabled: whatsappEnabled ?? true,
           messengerEnabled: messengerEnabled ?? true,
           tawkToEnabled: tawkToEnabled ?? true,
+          gaPropertyId: gaPropertyId || "",
+          gaServiceJson: gaServiceJson || "",
+          tawkToIdentifyUsers: tawkToIdentifyUsers ?? false,
         },
       },
       { upsert: true }

@@ -54,6 +54,9 @@ const GeneralSettingsForm = () => {
     whatsappEnabled: true,
     messengerEnabled: true,
     tawkToEnabled: true,
+    tawkToIdentifyUsers: false,
+    gaPropertyId: "",
+    gaServiceJson: "",
     announcements: [],
     announcementsStatus: true,
     reviewsEnabled: true,
@@ -89,6 +92,9 @@ const GeneralSettingsForm = () => {
         whatsappEnabled: data.whatsappEnabled ?? true,
         messengerEnabled: data.messengerEnabled ?? true,
         tawkToEnabled: data.tawkToEnabled ?? true,
+        tawkToIdentifyUsers: data.tawkToIdentifyUsers ?? false,
+        gaPropertyId: data.gaPropertyId || "",
+        gaServiceJson: data.gaServiceJson || "",
         announcements: data.announcements || [],
         announcementsStatus: data.announcementsStatus ?? true,
         reviewsEnabled: data.reviewsEnabled ?? true,
@@ -111,6 +117,9 @@ const GeneralSettingsForm = () => {
         whatsappEnabled: true,
         messengerEnabled: true,
         tawkToEnabled: true,
+        tawkToIdentifyUsers: false,
+        gaPropertyId: "",
+        gaServiceJson: "",
         announcements: [],
         announcementsStatus: true,
         reviewsEnabled: true,
@@ -434,6 +443,40 @@ const GeneralSettingsForm = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label className="flex items-center space-x-2 capitalize font-medium text-gray-700">
+                  <span className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                     G
+                  </span>
+                  <span>GA4 Property ID</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={formData.gaPropertyId || ""}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gaPropertyId: e.target.value }))}
+                  placeholder={`e.g. 123456789`}
+                  disabled={!isEditing}
+                  className="bg-gray-50 border border-gray-300 text-sm p-2.5"
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label className="flex items-center space-x-2 capitalize font-medium text-gray-700">
+                  <span className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                     G
+                  </span>
+                  <span>Google Service Account JSON</span>
+                </Label>
+                <Textarea
+                  value={formData.gaServiceJson || ""}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gaServiceJson: e.target.value }))}
+                  placeholder={`Paste the entire JSON string from Google Cloud Service Account...`}
+                  disabled={!isEditing}
+                  rows={4}
+                  className="bg-gray-50 border border-gray-300 text-sm p-2.5 w-full font-mono text-xs"
+                />
+              </div>
+
             </div>
           </div>
         </div>
@@ -545,6 +588,18 @@ const GeneralSettingsForm = () => {
               <Label className={`text-sm font-medium ${formData.tawkToEnabled ? "text-green-600" : "text-gray-500"}`}>
                 {formData.tawkToEnabled ? "Tawk.to Chat Widget Enabled" : "Tawk.to Chat Widget Disabled"}
               </Label>
+            </div>
+
+            <div className="flex items-center space-x-2 mt-4 pt-4 border-t">
+              <Switch
+                checked={formData.tawkToIdentifyUsers}
+                onCheckedChange={(checked) => isEditing && setFormData((prev) => ({ ...prev, tawkToIdentifyUsers: checked }))}
+                disabled={!isEditing}
+              />
+              <Label className={`text-sm font-medium ${formData.tawkToIdentifyUsers ? "text-green-600" : "text-gray-500"}`}>
+                {formData.tawkToIdentifyUsers ? "Tawk.to Identifies Logged User: Enabled" : "Tawk.to Identifies Logged User: Disabled"}
+              </Label>
+              <p className="text-xs text-gray-500 ml-2 block w-full mt-1">If enabled, the widget will automatically pass names & emails of logged-in customers to your Tawk.to dashboard.</p>
             </div>
           </div>
         </div>
