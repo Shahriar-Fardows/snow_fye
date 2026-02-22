@@ -1,13 +1,7 @@
 "use client";
 
 import { MessageCircle, X } from "lucide-react";
-import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from "react";
-
-const MessengerCustomerChat = dynamic(
-  () => import("react-messenger-customer-chat"),
-  { ssr: false }
-);
 
 export default function SupportWidget() {
   const [supportOptions, setSupportOptions] = useState([]);
@@ -49,29 +43,21 @@ export default function SupportWidget() {
             const pageId = data.messengerPageId.trim();
             
             if (pageId) {
-              const appId = data.messengerAppId ? data.messengerAppId.trim() : "none";
-              setMessengerConfig({ pageId, appId });
-            }
+              setMessengerConfig({ pageId });
 
-            options.push({
-              id: "messenger",
-              name: "Facebook Messenger",
-              icon: (
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                  <path d="M12 2C6.477 2 2 6.14 2 11.25c0 2.923 1.488 5.518 3.791 7.182v3.318a.75.75 0 0 0 1.157.63l3.226-2.1c1.173.328 2.443.5 3.826.5 5.523 0 10-4.14 10-9.25S17.523 2 12 2zm1.096 12.336-2.583-2.756a.75.75 0 0 0-1.077-.042l-3.565 3.428c-.46.442.227 1.134.733.72l2.673-2.188a.75.75 0 0 0 .93-.057l2.583 2.756a.75.75 0 0 0 1.076.042l3.565-3.428c.46-.442-.227-1.134-.733-.72l-2.602 2.245z"/>
-                </svg>
-              ),
-              color: "bg-[#0084FF] hover:bg-[#006bd1]",
-              action: () => {
-                if (window.FB && window.FB.CustomerChat) {
-                  window.FB.CustomerChat.show(true);
-                  window.FB.CustomerChat.showDialog();
-                } else {
-                  console.log("CustomerChat plugin not ready yet.");
-                  alert("Please wait a moment for the Messenger chat to load.");
-                }
-              },
-            });
+              options.push({
+                id: "messenger",
+                name: "Facebook Messenger",
+                icon: (
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M12 2C6.477 2 2 6.14 2 11.25c0 2.923 1.488 5.518 3.791 7.182v3.318a.75.75 0 0 0 1.157.63l3.226-2.1c1.173.328 2.443.5 3.826.5 5.523 0 10-4.14 10-9.25S17.523 2 12 2zm1.096 12.336-2.583-2.756a.75.75 0 0 0-1.077-.042l-3.565 3.428c-.46.442.227 1.134.733.72l2.673-2.188a.75.75 0 0 0 .93-.057l2.583 2.756a.75.75 0 0 0 1.076.042l3.565-3.428c.46-.442-.227-1.134-.733-.72l-2.602 2.245z"/>
+                  </svg>
+                ),
+                color: "bg-[#0084FF] hover:bg-[#006bd1]",
+                link: `https://m.me/${pageId}`,
+                action: null,
+              });
+            }
           }
 
           // Tawk.to (Script Injection)
@@ -133,43 +119,14 @@ export default function SupportWidget() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Avoid hiding FB bubble if it's the only option, but we want our custom SupportWidget to control it if multiple
-  useEffect(() => {
-    if (supportOptions.length > 1 && messengerConfig) {
-      const fbCheck = setInterval(() => {
-        if (window.FB && window.FB.CustomerChat) {
-          window.FB.CustomerChat.hide();
-          clearInterval(fbCheck);
-        }
-      }, 500);
-      return () => clearInterval(fbCheck);
-    }
-  }, [supportOptions.length, messengerConfig]);
-
   if (supportOptions.length === 0) return null;
 
   // Single active support option -> Click opens directly without menu
   if (supportOptions.length === 1) {
     const option = supportOptions[0];
-    // If it's only messenger, we just render the raw div. 
-    // The FB SDK will automatically create the bubble, we don't need our custom button.
-    if (option.id === "messenger") {
-      return (
-        <MessengerCustomerChat
-          pageId={messengerConfig.pageId}
-          appId={messengerConfig.appId}
-          version="18.0"
-        />
-      );
-    }
 
     return (
       <>
-        <MessengerCustomerChat
-          pageId={messengerConfig.pageId}
-          appId={messengerConfig.appId}
-          version="18.0"
-        />
         {option.action ? (
           <button
             onClick={option.action}
@@ -196,13 +153,6 @@ export default function SupportWidget() {
   // Multiple active options -> Click toggles menu
   return (
     <>
-      {messengerConfig && (
-        <MessengerCustomerChat
-          pageId={messengerConfig.pageId}
-          appId={messengerConfig.appId}
-          version="18.0"
-        />
-      )}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" ref={menuRef}>
         {/* Menu Overlay */}
         {isOpen && (
