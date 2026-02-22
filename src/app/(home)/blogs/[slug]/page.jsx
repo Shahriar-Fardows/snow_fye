@@ -51,7 +51,9 @@ const BlogDetailPage = () => {
       const foundBlog = data.find((b) => b.slug === params.slug && b.published)
 
       if (!foundBlog) {
-        throw new Error("Blog not found")
+        setError("Blog not found")
+        setLoading(false)
+        return
       }
 
       setBlog(foundBlog)

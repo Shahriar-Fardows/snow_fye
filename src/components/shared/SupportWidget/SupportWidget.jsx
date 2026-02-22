@@ -1,13 +1,7 @@
 "use client";
 
 import { MessageCircle, X } from "lucide-react";
-import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from "react";
-
-const MessengerCustomerChat = dynamic(
-  () => import("react-messenger-customer-chat"),
-  { ssr: false }
-);
 
 export default function SupportWidget() {
   const [supportOptions, setSupportOptions] = useState([]);
@@ -44,13 +38,33 @@ export default function SupportWidget() {
             });
           }
 
-          // Facebook Messenger (React Component Injection)
+          // Facebook Messenger
           if (data.messengerPageId && data.messengerEnabled !== false) {
             const pageId = data.messengerPageId.trim();
-            const appId = (data.messengerAppId || "123456789").trim();
             
             if (pageId) {
-              setMessengerConfig({ pageId, appId });
+              setMessengerConfig({ pageId });
+
+              // Inject Facebook SDK natively inside a check
+              if (!document.getElementById("facebook-jssdk")) {
+                const fbRoot = document.createElement("div");
+                fbRoot.id = "fb-root";
+                document.body.appendChild(fbRoot);
+
+                window.fbAsyncInit = function() {
+                  window.FB.init({
+                    xfbml      : true,
+                    version    : 'v18.0'
+                  });
+                };
+
+                const script = document.createElement("script");
+                script.id = "facebook-jssdk";
+                script.src = "https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
+                script.async = true;
+                script.defer = true;
+                document.body.appendChild(script);
+              }
             }
 
             options.push({
@@ -68,8 +82,8 @@ export default function SupportWidget() {
                   window.FB.CustomerChat.show(true);
                   window.FB.CustomerChat.showDialog();
                 } else {
-                  console.log("CustomerChat plugin not ready yet or blocked.");
-                  alert("Facebook Messenger is loading. If nothing happens, please ensure your AdBlocker is disabled, your App ID & Page ID are correct, and your domain is whitelisted on Facebook.");
+                  console.log("CustomerChat plugin not ready yet or blocked. Opening Messenger app/website fallback.");
+                  window.open(`https://m.me/${pageId}`, "_blank");
                 }
               },
             });
@@ -154,11 +168,12 @@ export default function SupportWidget() {
     const option = supportOptions[0];
     if (option.id === "messenger") {
       return (
-        <MessengerCustomerChat
-          pageId={messengerConfig.pageId}
-          appId={messengerConfig.appId || "none"}
-          version="18.0"
-        />
+        <div 
+          id="fb-customer-chat" 
+          className="fb-customerchat"
+          attribution="setup_tool"
+          page_id={messengerConfig.pageId}
+        ></div>
       );
     }
 
@@ -191,11 +206,12 @@ export default function SupportWidget() {
   return (
     <>
       {messengerConfig && (
-        <MessengerCustomerChat
-          pageId={messengerConfig.pageId}
-          appId={messengerConfig.appId}
-          version="18.0"
-        />
+        <div 
+          id="fb-customer-chat" 
+          className="fb-customerchat"
+          attribution="setup_tool"
+          page_id={messengerConfig.pageId}
+        ></div>
       )}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end" ref={menuRef}>
         {/* Menu Overlay */}
