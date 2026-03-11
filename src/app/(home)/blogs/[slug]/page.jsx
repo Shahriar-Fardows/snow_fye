@@ -89,10 +89,12 @@ const BlogDetailPage = () => {
   }
 
   const calculateReadTime = (content) => {
-    const wordsPerMinute = 200
-    const wordCount = content.split(/\s+/).length
-    const readTime = Math.ceil(wordCount / wordsPerMinute)
-    return readTime
+    if (!content) return 0;
+    const textContent = content.replace(/<[^>]*>?/gm, '');
+    const wordsPerMinute = 200;
+    const wordCount = textContent.trim().split(/\s+/).filter(Boolean).length;
+    const readTime = Math.ceil(wordCount / wordsPerMinute);
+    return readTime === 0 ? 1 : readTime;
   }
 
   const handleShare = (platform) => {
@@ -208,7 +210,7 @@ const BlogDetailPage = () => {
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              <span>{calculateReadTime(blog.content)} min read</span>
+              <span>{calculateReadTime(blog?.content || "")} min read</span>
             </div>
           </div>
 
@@ -243,7 +245,10 @@ const BlogDetailPage = () => {
         <div className="bg-white rounded-lg shadow-sm p-8 mb-12">
           <div className="prose prose-lg max-w-none">
             <p className="text-xl text-gray-700 font-medium mb-6">{blog.excerpt}</p>
-            <div className="text-gray-700 leading-relaxed whitespace-pre-line">{blog.content}</div>
+            <div 
+              className="text-gray-700 leading-relaxed" 
+              dangerouslySetInnerHTML={{ __html: blog.content }} 
+            />
           </div>
         </div>
 
@@ -259,7 +264,7 @@ const BlogDetailPage = () => {
                 >
                   <CardContent className="p-0">
                     <div className="relative aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
-                      <Link href={`/blog/${relatedBlog.slug}`}>
+                      <Link href={`/blogs/${relatedBlog.slug}`}>
                         <img
                           src={relatedBlog.image || "/placeholder.svg?height=400&width=600"}
                           alt={relatedBlog.title}
@@ -268,7 +273,7 @@ const BlogDetailPage = () => {
                       </Link>
                     </div>
                     <div className="p-4">
-                      <Link href={`/blog/${relatedBlog.slug}`}>
+                      <Link href={`/blogs/${relatedBlog.slug}`}>
                         <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 cursor-pointer transition-colors">
                           {relatedBlog.title}
                         </h3>
